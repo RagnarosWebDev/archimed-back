@@ -133,10 +133,12 @@ export class UsersService {
     return { success: true };
   }
 
-  async getAllUsers() {
+  async getAllUsers(row: number) {
     return await this.userRepository.findAll({
       include: [Role],
       order: ['id'],
+      limit: 50,
+      offset: 50 * row,
     });
   }
 
@@ -144,24 +146,6 @@ export class UsersService {
     return await this.userRepository.findOne({
       where: { email },
       include: { all: true },
-    });
-  }
-
-  async findUser(email: string): Promise<User[]> {
-    return await this.userRepository.findAll({
-      where: {
-        [Op.or]: [
-          {
-            email: {
-              [Op.substring]: email,
-            },
-          },
-        ],
-      },
-      include: [Role],
-      attributes: {
-        exclude: ['password', 'token'],
-      },
     });
   }
 

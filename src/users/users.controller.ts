@@ -59,15 +59,6 @@ export class UsersController {
     return this.userService.getUserById(id);
   }
 
-  @ApiOperation({ summary: 'Поиск юзера по email' })
-  @ApiResponse({ status: 200, type: User })
-  @Get('/findUserByEmail')
-  @Roles('ADMIN')
-  @UseGuards(RolesGuard)
-  findUserByEmail(@Query('email') email: string) {
-    return this.userService.findUser(email);
-  }
-
   @ApiOperation({ summary: 'Информация о пользователе' })
   @ApiResponse({ status: 200, type: User })
   @UseGuards(RolesGuard)
@@ -113,8 +104,8 @@ export class UsersController {
   @Roles('ADMIN')
   @UseGuards(RolesGuard)
   @Get()
-  getAll() {
-    return this.userService.getAllUsers();
+  getAll(@Query('row') row: number) {
+    return this.userService.getAllUsers(row);
   }
 
   @ApiOperation({ summary: 'Изменить данные учетной записи' })
