@@ -9,9 +9,8 @@ import { Role } from './roles/role.model';
 import { UserRoles } from './roles/user-roles.model';
 import { GlobalJwtModule } from './global/global-jwt.module';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { Code } from './auth/code.model';
-import { join } from 'path';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { BookModule } from './book/book.module';
+import { Book } from './book/book.model';
 
 @Global()
 @Module({
@@ -26,34 +25,14 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSSWORD,
       database: process.env.POSTGRES_DB,
-      models: [User, Role, UserRoles, Code],
+      models: [User, Role, UserRoles, Book],
       autoLoadModels: true,
-    }),
-    MailerModule.forRoot({
-      transport: {
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT),
-        secure: true,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      },
-      defaults: {
-        from: `"No Reply" <${process.env.SMTP_USER}>`,
-      },
-      template: {
-        dir: join(__dirname, 'mailer'),
-        adapter: new HandlebarsAdapter(), // or new PugAdapter() or new EjsAdapter()
-        options: {
-          strict: true,
-        },
-      },
     }),
     UsersModule,
     RolesModule,
     AuthModule,
     GlobalJwtModule,
+    BookModule,
   ],
   providers: [MailerModule],
   controllers: [],

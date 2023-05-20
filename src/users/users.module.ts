@@ -8,13 +8,12 @@ import { UserRoles } from '../roles/user-roles.model';
 import { RolesModule } from '../roles/roles.module';
 import { AuthModule } from '../auth/auth.module';
 import { GlobalJwtModule } from '../global/global-jwt.module';
-import { Code } from '../auth/code.model';
 
 @Module({
   controllers: [UsersController],
   providers: [UsersService],
   imports: [
-    SequelizeModule.forFeature([User, Role, UserRoles, Code]),
+    SequelizeModule.forFeature([User, Role, UserRoles]),
     RolesModule,
     GlobalJwtModule,
     forwardRef(() => AuthModule),

@@ -1,9 +1,7 @@
 import {
-  BelongsTo,
   BelongsToMany,
   Column,
   DataType,
-  ForeignKey,
   HasMany,
   Model,
   Table,
@@ -11,8 +9,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { Role } from '../roles/role.model';
 import { UserRoles } from '../roles/user-roles.model';
-import { Code } from '../auth/code.model';
-import { PrimaryGeneratedColumn } from 'typeorm';
+import { Book } from '../book/book.model';
 
 @Table({ tableName: 'users', createdAt: false, updatedAt: false })
 export class User extends Model<User> {
@@ -20,12 +17,11 @@ export class User extends Model<User> {
     example: '1',
     description: 'Уникальный идентификатор пользователя',
   })
-  @PrimaryGeneratedColumn()
   id: number;
 
   @ApiProperty({
     example: 'user@email.com',
-    description: 'Почтовый адрес пользователя',
+    description: 'Логин пользователя',
   })
   @Column({
     type: DataType.STRING,
@@ -44,36 +40,9 @@ export class User extends Model<User> {
   })
   password: string;
 
-  @ApiProperty({
-    example: true,
-    description: 'Забанен пользователь или нет',
-  })
-  @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: false,
-  })
-  banned: boolean;
-
-  @ApiProperty({
-    example: 'Нарушение правил сообщества',
-    description: 'Причина бана пользователя',
-  })
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
-  banReason: string;
-
-  @ForeignKey(() => Code)
-  @Column
-  verifyId: number;
-  @ForeignKey(() => Code)
-  @Column
-  resetId: number;
-  @BelongsTo(() => Code, 'verifyId')
-  verify: Code;
   @BelongsToMany(() => Role, () => UserRoles)
   roles: Role[];
-  @BelongsTo(() => Code, 'resetId')
-  reset: Code;
+
+  @HasMany(() => Book, 'creatorId')
+  createdBooks: Book[];
 }

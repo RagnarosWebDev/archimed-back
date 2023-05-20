@@ -8,7 +8,7 @@ import {
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { AuthService } from './auth.service';
 import { User } from '../users/user.model';
-import { LoginUserDto } from '../users/dto/login-user.dto';
+import { LoginDto } from '../users/dto/login.dto';
 @ApiBearerAuth()
 @ApiTags('Авторизация')
 @Controller('auth')
@@ -18,7 +18,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Авторизация пользователя' })
   @ApiResponse({ status: 200, type: User })
   @Post('/login')
-  login(@Body() userDto: LoginUserDto) {
+  login(@Body() userDto: LoginDto) {
     return this.authService.login(userDto);
   }
 

@@ -9,7 +9,7 @@ import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { User } from '../users/user.model';
-import { LoginUserDto } from '../users/dto/login-user.dto';
+import { LoginDto } from '../users/dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -17,13 +17,13 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
   ) {}
-  async login(userDto: LoginUserDto) {
-    const user = await this.validateUser(userDto);
-    return this.generateToken(user);
+  async login(userDto: LoginDto) {
+    return this.generateToken(await this.validateUser(userDto));
   }
-
   async registration(userDto: CreateUserDto) {
-    const candidate = await this.usersService.getUserByEmail(userDto.email);
+    const candidate: User = await this.usersService.getUserByEmail(
+      userDto.email,
+    );
     if (candidate) {
       throw new HttpException(
         'Пользователь с таким email уже существует',
@@ -37,7 +37,6 @@ export class AuthService {
     });
     return this.generateToken(user);
   }
-
   private async generateToken(user: User) {
     const payload = {
       email: user.email,
@@ -49,7 +48,7 @@ export class AuthService {
     };
   }
 
-  private async validateUser(userDto: LoginUserDto) {
+  private async validateUser(userDto: LoginDto) {
     const user = await this.usersService.getUserByEmail(userDto.email);
     if (!user) {
       throw new BadRequestException({

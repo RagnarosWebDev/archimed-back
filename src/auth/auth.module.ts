@@ -6,7 +6,6 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { User } from '../users/user.model';
 import { Role } from '../roles/role.model';
 import { GlobalJwtModule } from '../global/global-jwt.module';
-import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   controllers: [AuthController],
@@ -15,7 +14,6 @@ import { MailerModule } from '@nestjs-modules/mailer';
     SequelizeModule.forFeature([User, Role]),
     forwardRef(() => UsersModule),
     GlobalJwtModule,
-    MailerModule,
   ],
   exports: [AuthService],
 })

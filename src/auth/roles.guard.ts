@@ -62,7 +62,6 @@ export class RolesGuard implements CanActivate {
         message: 'Аккаунт не подтвержден',
       });
     }
-    console.log(user.roles.map((u) => u.name).toString());
     if (
       requiredRoles &&
       requiredRoles.length != 0 &&

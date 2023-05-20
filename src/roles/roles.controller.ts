@@ -33,15 +33,6 @@ export class RolesController {
     private jwtService: JwtService,
   ) {}
 
-  @ApiOperation({ summary: 'Создать роль' })
-  @ApiResponse({ status: 200, type: [Role] })
-  @Post('/create')
-  @Roles('ADMIN')
-  @UseGuards(RolesGuard)
-  create(@Body() roleDto: CreateRoleDto) {
-    return this.rolesService.createRole(roleDto);
-  }
-
   @ApiOperation({ summary: 'Посмотреть все роли' })
   @ApiResponse({ status: 200, type: [Role] })
   @Get()

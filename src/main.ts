@@ -13,7 +13,7 @@ async function startApp() {
     .setDescription('Документация REST API')
     .addBearerAuth({ in: 'header', type: 'http' })
     .setVersion('1.0.0')
-    .addTag('Стол  ')
+    .addTag('Стол')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
