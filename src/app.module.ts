@@ -9,8 +9,6 @@ import { Role } from './roles/role.model';
 import { UserRoles } from './roles/user-roles.model';
 import { GlobalJwtModule } from './global/global-jwt.module';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { BookModule } from './book/book.module';
-import { Book } from './book/book.model';
 
 @Global()
 @Module({
@@ -25,14 +23,13 @@ import { Book } from './book/book.model';
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSSWORD,
       database: process.env.POSTGRES_DB,
-      models: [User, Role, UserRoles, Book],
+      models: [User, Role, UserRoles],
       autoLoadModels: true,
     }),
     UsersModule,
     RolesModule,
     AuthModule,
     GlobalJwtModule,
-    BookModule,
   ],
   providers: [MailerModule],
   controllers: [],

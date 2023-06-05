@@ -9,7 +9,6 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { Role } from '../roles/role.model';
 import { UserRoles } from '../roles/user-roles.model';
-import { Book } from '../book/book.model';
 
 @Table({ tableName: 'users', createdAt: false, updatedAt: false })
 export class User extends Model<User> {
@@ -43,6 +42,4 @@ export class User extends Model<User> {
   @BelongsToMany(() => Role, () => UserRoles)
   roles: Role[];
 
-  @HasMany(() => Book, 'creatorId')
-  createdBooks: Book[];
 }
