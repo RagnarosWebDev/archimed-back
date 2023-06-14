@@ -8,9 +8,9 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { ApiProperty } from '@nestjs/swagger';
-import { Product } from '../../../dist/product/product';
 import { ValueVariant } from '../../variant/value-variant.model';
 import { ProductVariantVariants } from './product-variant-variants.model';
+import { Product } from '../product.model';
 
 @Table({ tableName: 'product-variant', createdAt: false, updatedAt: false })
 export class ProductVariant extends Model<ProductVariant> {
