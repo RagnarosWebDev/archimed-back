@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  Query,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Query, Req, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
   ApiBearerAuth,
@@ -13,11 +7,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { User } from './user.model';
-import { Roles, SkipEmailVerification } from '../auth/roles-auth.decorator';
+import { Roles } from '../auth/roles-auth.decorator';
 import { RolesGuard } from '../auth/roles.guard';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
-import { Role } from '../roles/role.model';
+import { Role } from './role.model';
 
 @ApiBearerAuth()
 @ApiTags('Пользователи')
@@ -31,18 +25,17 @@ export class UsersController {
   @ApiOperation({ summary: 'Информация о пользователе' })
   @ApiResponse({ status: 200, type: User })
   @UseGuards(RolesGuard)
-  @SkipEmailVerification()
   @Get('/myInfo')
   userInfo(@Req() req: Request) {
     const user: User = this.jwtService.verify(
       req.headers.authorization.split(' ')[1],
     );
-    return this.userService.getUserById(user.id, [Role], []);
+    return this.userService.getUserById(user.id);
   }
 
   @ApiOperation({ summary: 'Получение всех пользователей' })
   @ApiResponse({ status: 200, type: [User] })
-  @Roles('ADMIN')
+  @Roles(Role.ADMIN)
   @UseGuards(RolesGuard)
   @Get()
   getAll(@Query('row') row: number) {

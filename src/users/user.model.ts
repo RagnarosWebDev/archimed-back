@@ -1,14 +1,6 @@
-import {
-  BelongsToMany,
-  Column,
-  DataType,
-  HasMany,
-  Model,
-  Table,
-} from 'sequelize-typescript';
+import { Column, DataType, Model, Table } from 'sequelize-typescript';
 import { ApiProperty } from '@nestjs/swagger';
-import { Role } from '../roles/role.model';
-import { UserRoles } from '../roles/user-roles.model';
+import { Role } from './role.model';
 
 @Table({ tableName: 'users', createdAt: false, updatedAt: false })
 export class User extends Model<User> {
@@ -19,15 +11,34 @@ export class User extends Model<User> {
   id: number;
 
   @ApiProperty({
-    example: 'user@email.com',
-    description: 'Логин пользователя',
+    example: '+79156471885',
+    description: 'Номер телефона',
   })
   @Column({
     type: DataType.STRING,
-    unique: true,
+    allowNull: false,
+  })
+  phone: string;
+
+  @ApiProperty({
+    example: 'test@gmail.com',
+    description: 'Почта',
+  })
+  @Column({
+    type: DataType.STRING,
     allowNull: false,
   })
   email: string;
+
+  @ApiProperty({
+    example: 'Тест Тестович',
+    description: 'Имя и фамилия',
+  })
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  fullName: string;
 
   @ApiProperty({
     example: '12345678',
@@ -39,7 +50,13 @@ export class User extends Model<User> {
   })
   password: string;
 
-  @BelongsToMany(() => Role, () => UserRoles)
-  roles: Role[];
-
+  @ApiProperty({
+    example: Role.USER,
+    description: 'Роль',
+  })
+  @Column({
+    type: DataType.ENUM(...Object.values(Role)),
+    allowNull: false,
+  })
+  role: Role;
 }

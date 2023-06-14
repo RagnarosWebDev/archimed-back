@@ -1,7 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
+import { Role } from '../users/role.model';
 
 export const ROLES_KEY = 'roles';
-export const SKIP_EMAIL_VERIFY = 'skip';
-
-export const Roles = (...roles: string[]) => SetMetadata(ROLES_KEY, roles);
-export const SkipEmailVerification = () => SetMetadata(SKIP_EMAIL_VERIFY, true);
+export const Roles = (...roles: Role[]) => SetMetadata(ROLES_KEY, roles);

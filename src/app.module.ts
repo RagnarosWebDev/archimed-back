@@ -1,14 +1,20 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { RolesModule } from './roles/roles.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { User } from './users/user.model';
-import { Role } from './roles/role.model';
-import { UserRoles } from './roles/user-roles.model';
 import { GlobalJwtModule } from './global/global-jwt.module';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { Product } from './product/product.model';
+import { VariantModule } from './variant/variant.module';
+import { Variant } from './variant/variant.model';
+import { ValueVariant } from './variant/value-variant.model';
+import { ProductVariantTable } from './product/many/product-variant-table';
+import { ProductVariantVariants } from './product/many/product-variant-variants.model';
+import { ProductVariant } from './product/many/product-variant.model';
+import { ProductModule } from './product/product.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 @Global()
 @Module({
@@ -16,20 +22,34 @@ import { MailerModule } from '@nestjs-modules/mailer';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    ServeStaticModule.forRoot({
+      rootPath: 'images',
+      serveRoot: '/images',
+    }),
     SequelizeModule.forRoot({
       dialect: 'postgres',
       host: process.env.POSTGRES_HOST,
       port: Number(process.env.POSTGRES_PORT),
       username: process.env.POSTGRES_USER,
-      password: process.env.POSTGRES_PASSSWORD,
+      password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      models: [User, Role, UserRoles],
+      models: [
+        User,
+        Product,
+        Variant,
+        ValueVariant,
+        ProductVariantTable,
+        ProductVariantVariants,
+        ProductVariant,
+      ],
+      //sync: { force: true, alter: false },
       autoLoadModels: true,
     }),
     UsersModule,
-    RolesModule,
     AuthModule,
     GlobalJwtModule,
+    VariantModule,
+    ProductModule,
   ],
   providers: [MailerModule],
   controllers: [],

@@ -2,27 +2,24 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from './user.model';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UserRoles } from '../roles/user-roles.model';
-import { Includeable } from 'sequelize';
-import { Role } from '../roles/role.model';
+import { Role } from './role.model';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectModel(User) private userRepository: typeof User,
-    @InjectModel(UserRoles) private userRolesRepository: typeof UserRoles,
-  ) {}
+  constructor(@InjectModel(User) private userRepository: typeof User) {}
 
   async createUser(dto: CreateUserDto): Promise<User> {
     return await this.userRepository.create({
       email: dto.email,
+      phone: dto.phone,
       password: dto.password,
+      fullName: dto.fullName,
+      role: Role.USER,
     });
   }
 
   async getAllUsers(row: number) {
     return await this.userRepository.findAll({
-      include: [Role],
       order: ['id'],
       limit: 50,
       offset: 50 * row,
@@ -36,17 +33,9 @@ export class UsersService {
     });
   }
 
-  async getUserById(
-    id: number,
-    include: Includeable | Includeable[] = [],
-    exclude: string[] = [],
-  ): Promise<User> {
+  async getUserById(id: number): Promise<User> {
     return await this.userRepository.findOne({
       where: { id },
-      include: include,
-      attributes: {
-        exclude: exclude,
-      },
     });
   }
 }
