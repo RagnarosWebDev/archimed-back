@@ -15,6 +15,9 @@ import { ProductVariantVariants } from './product/many/product-variant-variants.
 import { ProductVariant } from './product/many/product-variant.model';
 import { ProductModule } from './product/product.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { Order } from './order/order.model';
+import { OrderValue } from './order/order-value.model';
+import { OrderModule } from './order/order.module';
 
 @Global()
 @Module({
@@ -41,6 +44,8 @@ import { ServeStaticModule } from '@nestjs/serve-static';
         ProductVariantTable,
         ProductVariantVariants,
         ProductVariant,
+        Order,
+        OrderValue,
       ],
       //sync: { force: true, alter: false },
       autoLoadModels: true,
@@ -50,9 +55,10 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     GlobalJwtModule,
     VariantModule,
     ProductModule,
+    OrderModule,
   ],
   providers: [MailerModule],
   controllers: [],
-  exports: [MailerModule],
+  exports: [],
 })
 export class AppModule {}

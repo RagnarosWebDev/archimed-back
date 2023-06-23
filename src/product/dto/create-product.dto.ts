@@ -41,6 +41,8 @@ export class CreateProductDto {
       variants: ['КГ'],
       price: 1000,
       count: 100,
+      secondPrice: 1000,
+      thirdPrice: 100,
     }),
     description: 'Список вариацих и из значений',
   })
@@ -58,6 +60,16 @@ class CreateVariantsDto {
     description: 'Цена',
   })
   price: number;
+  @ApiProperty({
+    example: 1000,
+    description: 'Цена',
+  })
+  secondPrice: number;
+  @ApiProperty({
+    example: 1000,
+    description: 'Цена',
+  })
+  thirdPrice: number;
   @ApiProperty({
     example: 1000,
     description: 'Кол-во',

@@ -59,6 +59,8 @@ export class ProductService {
       const current = await this.productVariantRepository.create({
         productId: product.id,
         price: productVariant.price,
+        secondPrice: productVariant.secondPrice,
+        thirdPrice: productVariant.thirdPrice,
         availableCount: productVariant.count,
       });
       await current.$set(
