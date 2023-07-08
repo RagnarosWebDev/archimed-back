@@ -41,4 +41,9 @@ export class EditProductDto {
     description: 'Рекомендованный ли товар?',
   })
   isRecommended: boolean;
+  @ApiProperty({
+    example: 'Категория',
+    description: 'Категория',
+  })
+  category: string;
 }

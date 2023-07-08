@@ -18,6 +18,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { Order } from './order/order.model';
 import { OrderValue } from './order/order-value.model';
 import { OrderModule } from './order/order.module';
+import { CallModule } from './call/call.module';
 
 @Global()
 @Module({
@@ -56,6 +57,7 @@ import { OrderModule } from './order/order.module';
     VariantModule,
     ProductModule,
     OrderModule,
+    CallModule,
   ],
   providers: [MailerModule],
   controllers: [],

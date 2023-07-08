@@ -1,48 +1,29 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsEmail,
-  IsNotEmpty,
-  IsPhoneNumber,
-  IsString,
-  MinLength,
-} from 'class-validator';
 
-export class CreateUserDto {
-  @IsString()
-  @IsNotEmpty()
-  @IsEmail()
+export class EditUserDto {
   @ApiProperty({
     example: 'Test',
     description: 'Логин пользователя',
   })
-  readonly email: string;
+  readonly email?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(5)
   @ApiProperty({
     example: '12345678',
     description: 'Пароль пользователя',
   })
-  readonly password: string;
+  readonly password?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @IsPhoneNumber()
   @ApiProperty({
     example: '+79156471885',
     description: 'Номер телефона',
   })
-  phone: string;
+  phone?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(5)
   @ApiProperty({
     example: 'Тест Тестович',
     description: 'Имя и фамилия',
   })
-  fullName: string;
+  fullName?: string;
 
   @ApiProperty({
     example: 'Что-то',
@@ -50,30 +31,21 @@ export class CreateUserDto {
   })
   website?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(3)
   @ApiProperty({
     example: 'Что-то',
     description: 'Что-то',
   })
-  storeAddress: string;
+  storeAddress?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(2)
   @ApiProperty({
     example: 'Россия',
     description: 'Страна',
   })
-  country: string;
+  country?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(2)
   @ApiProperty({
     example: 'СПБ',
     description: 'Город',
   })
-  city: string;
+  city?: string;
 }

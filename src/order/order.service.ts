@@ -6,6 +6,7 @@ import { Order } from './order.model';
 import { OrderValue } from './order-value.model';
 import { ProductVariant } from '../product/many/product-variant.model';
 import { Product } from '../product/product.model';
+import { Includeable } from 'sequelize/types/model';
 
 @Injectable()
 export class OrderService {
@@ -25,8 +26,6 @@ export class OrderService {
           },
         })
       : dto;
-
-    console.log(userData.email);
 
     const order: Order = await this.orderRepository.create({
       userId: userId,
@@ -99,28 +98,41 @@ export class OrderService {
       },
       offset: row * 20,
       limit: 20,
-      include: [
-        {
-          model: OrderValue,
-          include: [
-            {
-              model: ProductVariant,
-              include: [Product],
-              attributes: {
-                exclude: [
-                  'productId',
-                  'availableCount',
-                  'secondPrice',
-                  'thirdPrice',
-                ],
-              },
+      include: this.getInclude(),
+    });
+  }
+
+  getInclude(): Includeable[] {
+    return [
+      {
+        model: OrderValue,
+        include: [
+          {
+            model: ProductVariant,
+            include: [Product],
+            attributes: {
+              exclude: [
+                'productId',
+                'availableCount',
+                'secondPrice',
+                'thirdPrice',
+              ],
             },
-          ],
-          attributes: {
-            exclude: ['id', 'orderId', 'productVariantId'],
           },
+        ],
+        attributes: {
+          exclude: ['id', 'orderId', 'productVariantId'],
         },
-      ],
+      },
+    ];
+  }
+
+  async all(row: number) {
+    return this.orderRepository.findAll({
+      order: ['id'],
+      offset: row * 20,
+      limit: 20,
+      include: this.getInclude(),
     });
   }
 }

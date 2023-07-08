@@ -53,6 +53,7 @@ export class ProductService {
       countryProducer: dto.countryProducer,
       count: dto.count,
       isRecommended: false,
+      category: dto.category,
     });
 
     for (const productVariant of dto.productVariants) {
@@ -134,6 +135,7 @@ export class ProductService {
     if (dto.producer) edit.producer = dto.producer;
     if (dto.shortProducer) edit.shortProducer = dto.shortProducer;
     if (dto.isRecommended) edit.isRecommended = dto.isRecommended;
+    if (dto.category) edit.category = dto.category;
     await this.productRepository.update(edit, {
       where: {
         id: dto.id,
@@ -182,6 +184,60 @@ export class ProductService {
         id: id,
       },
       include: this.includeFromProduct(),
+    });
+  }
+
+  async getById(id: number) {
+    return this.productRepository.findOne({
+      where: {
+        id: id,
+      },
+      include: this.includeFromProduct(),
+    });
+  }
+
+  async getByCategory(category: string, row: number) {
+    return this.productRepository.findAll({
+      where: {
+        category: category,
+      },
+      include: this.includeFromProduct(),
+      order: ['id'],
+      offset: 20 * row,
+      limit: 20,
+    });
+  }
+
+  async search(data: string, row: number) {
+    return this.productRepository.findAll({
+      where: {
+        [Op.or]: [
+          {
+            name: {
+              [Op.like]: '%' + data + '%',
+            },
+          },
+          {
+            description: {
+              [Op.like]: '%' + data + '%',
+            },
+          },
+          {
+            producer: {
+              [Op.like]: '%' + data + '%',
+            },
+          },
+          {
+            countryProducer: {
+              [Op.like]: '%' + data + '%',
+            },
+          },
+        ],
+      },
+      include: this.includeFromProduct(),
+      order: ['id'],
+      offset: 20 * row,
+      limit: 20,
     });
   }
 }

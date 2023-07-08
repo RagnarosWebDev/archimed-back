@@ -47,6 +47,12 @@ export class CreateProductDto {
     description: 'Список вариацих и из значений',
   })
   productVariants: CreateVariantsDto[];
+
+  @ApiProperty({
+    example: 'Категория',
+    description: 'Категория',
+  })
+  category: string;
 }
 
 class CreateVariantsDto {

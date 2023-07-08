@@ -21,6 +21,7 @@ import { Role } from '../users/role.model';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
+import { Order } from './order.model';
 
 @ApiBearerAuth()
 @ApiTags('Заказы')
@@ -47,12 +48,21 @@ export class OrderController {
   @UseGuards(RolesGuard)
   @Roles(Role.USER, Role.ADMIN)
   @ApiOperation({ summary: 'История заказов' })
-  @ApiResponse({ status: 200, type: User })
+  @ApiResponse({ status: 200, type: [Order] })
   @Get('/history')
   history(@Query('row') row: number, @Req() req: Request) {
     const user: User = this.jwtService.verify(
       req.headers.authorization.split(' ')[1],
     );
     return this.orderService.history(user.id, row);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Список всех заказов' })
+  @ApiResponse({ status: 200, type: [Order] })
+  @Get('/')
+  orders(@Query('row') row: number) {
+    return this.orderService.all(row);
   }
 }

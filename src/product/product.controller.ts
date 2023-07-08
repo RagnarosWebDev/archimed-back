@@ -5,6 +5,7 @@ import {
   Get,
   ParseFilePipe,
   Post,
+  Put,
   Query,
   UploadedFile,
   UseGuards,
@@ -86,7 +87,7 @@ export class ProductController {
 
   @ApiOperation({ summary: 'Редактирование продукты' })
   @ApiResponse({ status: 200, type: [Product] })
-  @Post('/editProduct')
+  @Put('/editProduct')
   editProduct(@Body() dto: EditProductDto): Promise<Product> {
     return this.productService.editProduct(dto);
   }
@@ -98,5 +99,32 @@ export class ProductController {
     @Body() dto: EditProductVariantDto,
   ): Promise<ProductVariant> {
     return this.productService.editProductVariant(dto);
+  }
+
+  @ApiOperation({ summary: 'Получить продукт по Id' })
+  @ApiResponse({ status: 200, type: Product })
+  @Get('/')
+  getById(@Query('id') id: number): Promise<Product> {
+    return this.productService.getById(id);
+  }
+
+  @ApiOperation({ summary: 'Получить продукты по категории' })
+  @ApiResponse({ status: 200, type: [Product] })
+  @Get('/searchCategories')
+  getByCategory(
+    @Query('category') category: string,
+    @Query('row') row: number,
+  ): Promise<Product[]> {
+    return this.productService.getByCategory(category, row);
+  }
+
+  @ApiOperation({ summary: 'Поиск продуктов' })
+  @ApiResponse({ status: 200, type: [Product] })
+  @Get('/search')
+  search(
+    @Query('search') search: string,
+    @Query('row') row: number,
+  ): Promise<Product[]> {
+    return this.productService.search(search, row);
   }
 }

@@ -30,6 +30,16 @@ export class Product extends Model<Product> {
   name: string;
 
   @ApiProperty({
+    example: 'Категория',
+    description: 'Категория',
+  })
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  category: string;
+
+  @ApiProperty({
     example: 'Что-то',
     description: 'Описание',
   })

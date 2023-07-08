@@ -42,6 +42,46 @@ export class User extends Model<User> {
   fullName: string;
 
   @ApiProperty({
+    example: 'Сайт',
+    description: 'Сайт',
+  })
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  website: string;
+
+  @ApiProperty({
+    example: 'Что-то',
+    description: 'Хз что это',
+  })
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  storeAddress: string;
+
+  @ApiProperty({
+    example: 'Россия',
+    description: 'Страна',
+  })
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  country: string;
+
+  @ApiProperty({
+    example: 'Спб',
+    description: 'Город',
+  })
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  city: string;
+
+  @ApiProperty({
     example: '12345678',
     description: 'Пароль пользователя',
   })
