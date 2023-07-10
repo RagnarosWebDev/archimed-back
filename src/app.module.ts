@@ -19,6 +19,7 @@ import { Order } from './order/order.model';
 import { OrderValue } from './order/order-value.model';
 import { OrderModule } from './order/order.module';
 import { CallModule } from './call/call.module';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Global()
 @Module({
@@ -56,11 +57,12 @@ import { CallModule } from './call/call.module';
     GlobalJwtModule,
     VariantModule,
     ProductModule,
+    MulterModule,
     OrderModule,
     CallModule,
   ],
   providers: [MailerModule],
   controllers: [],
-  exports: [],
+  exports: [MulterModule],
 })
 export class AppModule {}

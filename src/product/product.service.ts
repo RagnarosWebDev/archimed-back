@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Product } from './product.model';
 import { CreateProductDto } from './dto/create-product.dto';
 import { Variant } from '../variant/variant.model';
-import { Includeable, Op, Optional } from 'sequelize';
+import sequelize, { Includeable, Op, Optional } from 'sequelize';
 import { ProductVariant } from './many/product-variant.model';
 import { ValueVariant } from '../variant/value-variant.model';
 import { EditProductDto } from './dto/edit-product.dto';
@@ -105,25 +105,41 @@ export class ProductService {
     ];
   }
 
-  async getProducts(from: number, to: number) {
+  async getProducts(row: number) {
     return this.productRepository.findAll({
-      group: ['id'],
-      offset: from,
-      limit: to,
+      order: ['id'],
+      offset: 20 * row,
+      limit: 20,
       include: this.includeFromProduct(),
     });
   }
 
-  async recommended(from: number, to: number) {
+  async getProductsCountPage() {
+    const count = await this.productRepository.count({});
+
+    return { pages: Math.floor(count / 20) + (count % 20 == 0 ? 0 : 1) };
+  }
+
+  async recommended(row: number) {
     return this.productRepository.findAll({
       where: {
         isRecommended: true,
       },
-      group: ['id'],
-      offset: from,
-      limit: to,
+      order: ['id'],
+      offset: 20,
+      limit: row * 20,
       include: this.includeFromProduct(),
     });
+  }
+
+  async recommendedCountPage() {
+    const count = await this.productRepository.count({
+      where: {
+        isRecommended: true,
+      },
+    });
+
+    return { pages: Math.floor(count / 20) + (count % 20 == 0 ? 0 : 1) };
   }
 
   async editProduct(dto: EditProductDto) {
@@ -208,6 +224,16 @@ export class ProductService {
     });
   }
 
+  async getByCategoryCountPage(category: string) {
+    const count = await this.productRepository.count({
+      where: {
+        category: category,
+      },
+    });
+
+    return { pages: Math.floor(count / 20) + (count % 20 == 0 ? 0 : 1) };
+  }
+
   async search(data: string, row: number) {
     return this.productRepository.findAll({
       where: {
@@ -238,6 +264,44 @@ export class ProductService {
       order: ['id'],
       offset: 20 * row,
       limit: 20,
+    });
+  }
+  async getSearchCountPages(data: string) {
+    const count = await this.productRepository.count({
+      where: {
+        [Op.or]: [
+          {
+            name: {
+              [Op.like]: '%' + data + '%',
+            },
+          },
+          {
+            description: {
+              [Op.like]: '%' + data + '%',
+            },
+          },
+          {
+            producer: {
+              [Op.like]: '%' + data + '%',
+            },
+          },
+          {
+            countryProducer: {
+              [Op.like]: '%' + data + '%',
+            },
+          },
+        ],
+      },
+    });
+    return { pages: Math.floor(count / 20) + (count % 20 == 0 ? 0 : 1) };
+  }
+
+  async allCategories() {
+    return this.productRepository.findAll({
+      attributes: [
+        [sequelize.fn('DISTINCT', sequelize.col('category')), 'category'],
+      ],
+      group: ['category'],
     });
   }
 }

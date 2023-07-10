@@ -4,6 +4,7 @@ import { User } from './user.model';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Role } from './role.model';
 import { EditUserDto } from './dto/edit-user.dto';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
@@ -41,6 +42,7 @@ export class UsersService {
     await this.userRepository.update(
       {
         ...dto,
+        password: await bcrypt.hash(dto.password, 5),
       },
       {
         where: {

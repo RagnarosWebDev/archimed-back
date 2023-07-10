@@ -30,8 +30,6 @@ export class VariantController {
   }
   @ApiOperation({ summary: 'Получить все варианты' })
   @ApiResponse({ status: 200, type: [Variant] })
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
   @Get('/all')
   all(): Promise<Variant[]> {
     return this.variantService.all();
