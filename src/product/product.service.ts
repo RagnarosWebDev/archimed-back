@@ -126,8 +126,8 @@ export class ProductService {
         isRecommended: true,
       },
       order: ['id'],
-      offset: 20,
-      limit: row * 20,
+      offset: row * 20,
+      limit: 20,
       include: this.includeFromProduct(),
     });
   }
