@@ -65,4 +65,25 @@ export class OrderController {
   orders(@Query('row') row: number) {
     return this.orderService.all(row);
   }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Кол-во страниц всех заказов' })
+  @ApiResponse({ status: 200 })
+  @Get('/countAll')
+  countAll() {
+    return this.orderService.countAll();
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(Role.USER, Role.ADMIN)
+  @ApiOperation({ summary: 'Кол-во страниц для истории заказов' })
+  @ApiResponse({ status: 200 })
+  @Get('/countHistory')
+  countHistory(@Req() req: Request) {
+    const user: User = this.jwtService.verify(
+      req.headers.authorization.split(' ')[1],
+    );
+    return this.orderService.countHistory(user.id);
+  }
 }

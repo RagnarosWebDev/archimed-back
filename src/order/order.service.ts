@@ -96,10 +96,20 @@ export class OrderService {
       attributes: {
         exclude: ['phone', 'email', 'fullName'],
       },
+
       offset: row * 20,
       limit: 20,
       include: this.getInclude(),
     });
+  }
+
+  async countHistory(userId: number) {
+    const count = await this.orderRepository.count({
+      where: {
+        userId: userId,
+      },
+    });
+    return { pages: Math.floor(count / 20) + (count % 20 == 0 ? 0 : 1) };
   }
 
   getInclude(): Includeable[] {
@@ -134,5 +144,10 @@ export class OrderService {
       limit: 20,
       include: this.getInclude(),
     });
+  }
+
+  async countAll() {
+    const count = await this.orderRepository.count({});
+    return { pages: Math.floor(count / 20) + (count % 20 == 0 ? 0 : 1) };
   }
 }

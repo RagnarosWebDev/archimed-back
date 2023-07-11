@@ -275,6 +275,7 @@ export class ProductService {
               [Op.like]: '%' + data + '%',
             },
           },
+
           {
             description: {
               [Op.like]: '%' + data + '%',
