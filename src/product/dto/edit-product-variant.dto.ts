@@ -9,13 +9,33 @@ export class EditProductVariantDto {
 
   @ApiProperty({
     example: 1000,
-    description: 'Остаток',
+    description: 'Цена',
   })
-  count: number;
-
+  price: number;
   @ApiProperty({
     example: 1000,
     description: 'Цена',
   })
-  price: number;
+  secondPrice: number;
+  @ApiProperty({
+    example: 1000,
+    description: 'Цена',
+  })
+  thirdPrice: number;
+  @ApiProperty({
+    example: 1000,
+    description: 'Цена',
+  })
+  fourthPrice: number;
+  @ApiProperty({
+    example: 1000,
+    description: 'Кол-во',
+  })
+  availableCount: number;
+
+  @ApiProperty({
+    example: 1000,
+    description: 'Мин упаковка',
+  })
+  minCount: number;
 }

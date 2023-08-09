@@ -6,6 +6,13 @@ export class EditProductDto {
     description: 'Id',
   })
   id: number;
+
+  @ApiProperty({
+    example: true,
+    description: 'Visible',
+  })
+  visible: boolean;
+
   @ApiProperty({
     example: 'А',
     description: 'Имя',
@@ -45,5 +52,5 @@ export class EditProductDto {
     example: 'Категория',
     description: 'Категория',
   })
-  category: string;
+  category: string[];
 }

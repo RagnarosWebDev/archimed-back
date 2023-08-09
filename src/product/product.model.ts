@@ -30,14 +30,14 @@ export class Product extends Model<Product> {
   name: string;
 
   @ApiProperty({
-    example: 'Категория',
-    description: 'Категория',
+    example: ['Категории'],
+    description: 'Категории',
   })
   @Column({
-    type: DataType.STRING,
+    type: DataType.ARRAY(DataType.STRING),
     allowNull: false,
   })
-  category: string;
+  category: string[];
 
   @ApiProperty({
     example: 'Что-то',
@@ -89,14 +89,15 @@ export class Product extends Model<Product> {
   })
   count: number;
 
-  @Column({
-    type: DataType.STRING,
-  })
   @ApiProperty({
-    example: '/data.png',
-    description: 'Картинка',
+    example: true,
+    description: 'Видно ли товар',
   })
-  image: string;
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+  })
+  visible: boolean;
 
   @Column({
     type: DataType.BOOLEAN,

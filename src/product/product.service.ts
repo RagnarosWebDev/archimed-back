@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Product } from './product.model';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -9,6 +14,8 @@ import { ValueVariant } from '../variant/value-variant.model';
 import { EditProductDto } from './dto/edit-product.dto';
 import { NullishPropertiesOf } from 'sequelize/types/utils';
 import { EditProductVariantDto } from './dto/edit-product-variant.dto';
+import { EditRecommendedDto } from './dto/edit-recommended.dto';
+import { ChangeVisibleDto } from './dto/change-visible.dto';
 
 @Injectable()
 export class ProductService {
@@ -20,6 +27,51 @@ export class ProductService {
     private productVariantRepository: typeof ProductVariant,
   ) {}
 
+  async allProducts(row: number) {
+    return this.productRepository.findAll({
+      order: ['id'],
+      offset: row * 20,
+      limit: 20,
+      include: this.includeFromProduct(),
+    });
+  }
+  async changeVisible(dto: ChangeVisibleDto) {
+    const [count] = await this.productRepository.update(
+      {
+        visible: dto.visible,
+      },
+      {
+        where: {
+          id: dto.id,
+        },
+      },
+    );
+
+    if (count == 0) {
+      throw new BadRequestException({
+        message: 'такого товара не сущетсвует',
+      });
+    }
+    return { success: true };
+  }
+
+  async editRecommended(dto: EditRecommendedDto) {
+    await this.productRepository.update(
+      {
+        isRecommended: dto.isRecommended,
+      },
+      {
+        where: {
+          id: dto.id,
+        },
+      },
+    );
+    return this.productRepository.findOne({
+      where: {
+        id: dto.id,
+      },
+    });
+  }
   async createProduct(dto: CreateProductDto): Promise<Product> {
     if (
       await this.productRepository.findOne({
@@ -48,6 +100,7 @@ export class ProductService {
     const product: Product = await this.productRepository.create({
       name: dto.name,
       producer: dto.producer,
+      visible: false,
       description: dto.description,
       shortProducer: dto.shortProducer,
       countryProducer: dto.countryProducer,
@@ -62,7 +115,9 @@ export class ProductService {
         price: productVariant.price,
         secondPrice: productVariant.secondPrice,
         thirdPrice: productVariant.thirdPrice,
-        availableCount: productVariant.count,
+        fourthPrice: productVariant.fourthPrice,
+        minCount: productVariant.minCount,
+        availableCount: productVariant.availableCount,
       });
       await current.$set(
         'valueVariants',
@@ -105,8 +160,17 @@ export class ProductService {
     ];
   }
 
+  async getAllProductsCountPage() {
+    const count = await this.productRepository.count({});
+
+    return { pages: Math.floor(count / 20) + (count % 20 == 0 ? 0 : 1) };
+  }
+
   async getProducts(row: number) {
     return this.productRepository.findAll({
+      where: {
+        visible: true,
+      },
       order: ['id'],
       offset: 20 * row,
       limit: 20,
@@ -115,7 +179,11 @@ export class ProductService {
   }
 
   async getProductsCountPage() {
-    const count = await this.productRepository.count({});
+    const count = await this.productRepository.count({
+      where: {
+        visible: true,
+      },
+    });
 
     return { pages: Math.floor(count / 20) + (count % 20 == 0 ? 0 : 1) };
   }
@@ -124,6 +192,7 @@ export class ProductService {
     return this.productRepository.findAll({
       where: {
         isRecommended: true,
+        visible: true,
       },
       order: ['id'],
       offset: row * 20,
@@ -136,6 +205,7 @@ export class ProductService {
     const count = await this.productRepository.count({
       where: {
         isRecommended: true,
+        visible: true,
       },
     });
 
@@ -150,8 +220,9 @@ export class ProductService {
     if (dto.description) edit.description = dto.description;
     if (dto.producer) edit.producer = dto.producer;
     if (dto.shortProducer) edit.shortProducer = dto.shortProducer;
-    if (dto.isRecommended) edit.isRecommended = dto.isRecommended;
+    if (dto.isRecommended != undefined) edit.isRecommended = dto.isRecommended;
     if (dto.category) edit.category = dto.category;
+    if (dto.visible != undefined) edit.visible = dto.visible;
     await this.productRepository.update(edit, {
       where: {
         id: dto.id,
@@ -171,7 +242,8 @@ export class ProductService {
       NullishPropertiesOf<ProductVariant>
     > = {};
     if (dto.price) edit.price = dto.price;
-    if (dto.count) edit.availableCount = dto.count;
+    if (dto.availableCount) edit.availableCount = dto.availableCount;
+    if (dto.minCount) edit.minCount = dto.minCount;
     await this.productVariantRepository.update(edit, {
       where: {
         id: dto.id,
@@ -185,7 +257,7 @@ export class ProductService {
   }
 
   async updateImage(id: number, file: string) {
-    await this.productRepository.update(
+    await this.productVariantRepository.update(
       {
         image: file,
       },
@@ -195,11 +267,11 @@ export class ProductService {
         },
       },
     );
-    return this.productRepository.findOne({
+    return this.productVariantRepository.findOne({
       where: {
         id: id,
       },
-      include: this.includeFromProduct(),
+      include: [ValueVariant],
     });
   }
 
@@ -215,7 +287,10 @@ export class ProductService {
   async getByCategory(category: string, row: number) {
     return this.productRepository.findAll({
       where: {
-        category: category,
+        category: {
+          [Op.contains]: [category],
+        },
+        visible: true,
       },
       include: this.includeFromProduct(),
       order: ['id'],
@@ -225,9 +300,10 @@ export class ProductService {
   }
 
   async getByCategoryCountPage(category: string) {
-    const count = await this.productRepository.count({
+    const count: number = await this.productRepository.count({
       where: {
-        category: category,
+        category: { [Op.contains]: [category] },
+        visible: true,
       },
     });
 
@@ -240,25 +316,26 @@ export class ProductService {
         [Op.or]: [
           {
             name: {
-              [Op.like]: '%' + data + '%',
+              [Op.iLike]: '%' + data + '%',
             },
           },
           {
             description: {
-              [Op.like]: '%' + data + '%',
+              [Op.iLike]: '%' + data + '%',
             },
           },
           {
             producer: {
-              [Op.like]: '%' + data + '%',
+              [Op.iLike]: '%' + data + '%',
             },
           },
           {
             countryProducer: {
-              [Op.like]: '%' + data + '%',
+              [Op.iLike]: '%' + data + '%',
             },
           },
         ],
+        visible: true,
       },
       include: this.includeFromProduct(),
       order: ['id'],
@@ -272,37 +349,47 @@ export class ProductService {
         [Op.or]: [
           {
             name: {
-              [Op.like]: '%' + data + '%',
+              [Op.iLike]: '%' + data + '%',
             },
           },
-
           {
             description: {
-              [Op.like]: '%' + data + '%',
+              [Op.iLike]: '%' + data + '%',
             },
           },
           {
             producer: {
-              [Op.like]: '%' + data + '%',
+              [Op.iLike]: '%' + data + '%',
             },
           },
           {
             countryProducer: {
-              [Op.like]: '%' + data + '%',
+              [Op.iLike]: '%' + data + '%',
             },
           },
         ],
+        visible: true,
       },
     });
     return { pages: Math.floor(count / 20) + (count % 20 == 0 ? 0 : 1) };
   }
 
-  async allCategories() {
+  async allVisibleCategories() {
     return this.productRepository.findAll({
+      where: {
+        visible: true,
+      },
       attributes: [
         [sequelize.fn('DISTINCT', sequelize.col('category')), 'category'],
       ],
       group: ['category'],
     });
+  }
+
+  async allCategories() {
+    const [[result]] = await this.productRepository.sequelize.query(
+      'SELECT array_agg(category) AS category FROM (SELECT distinct(unnest(category)) AS category FROM product) subquery;',
+    );
+    return (result as { category: string[] }).category;
   }
 }

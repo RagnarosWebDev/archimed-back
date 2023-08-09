@@ -5,7 +5,6 @@ import {
   Get,
   ParseFilePipe,
   Post,
-  Put,
   Query,
   UploadedFile,
   UseGuards,
@@ -29,6 +28,9 @@ import { ProductVariant } from './many/product-variant.model';
 import { EditProductVariantDto } from './dto/edit-product-variant.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as fs from 'fs';
+import { EditRecommendedDto } from './dto/edit-recommended.dto';
+import { ChangeVisibleDto } from './dto/change-visible.dto';
+import * as https from 'https';
 
 @ApiTags('product')
 @ApiBearerAuth()
@@ -44,6 +46,15 @@ export class ProductController {
   addProduct(@Body() dto: CreateProductDto): Promise<Product> {
     return this.productService.createProduct(dto);
   }
+
+  @ApiOperation({ summary: 'Изменить рекомендацию продукта' })
+  @ApiResponse({ status: 200, type: Product })
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @Post('/changeRecommended')
+  changeRecommended(@Body() dto: EditRecommendedDto): Promise<Product> {
+    return this.productService.editRecommended(dto);
+  }
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Загрузить картинку' })
   @ApiResponse({ status: 200, type: Product })
@@ -55,14 +66,70 @@ export class ProductController {
     @Query('id') id: number,
     @UploadedFile(
       new ParseFilePipe({
-        validators: [new FileTypeValidator({ fileType: 'image/png' })],
+        validators: [new FileTypeValidator({ fileType: /.(jpg|jpeg|png)/ })],
       }),
     )
     file: Express.Multer.File,
-  ): Promise<Product> {
-    const fileName = 'images/' + Date.now() + '.png';
+  ): Promise<ProductVariant> {
+    const fileName = 'images/' + Date.now();
     fs.writeFileSync(fileName, file.buffer);
     return this.productService.updateImage(id, fileName);
+  }
+
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Загрузить статик картинку' })
+  @ApiResponse({ status: 200 })
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @Post('/uploadStaticImage')
+  @UseInterceptors(FileInterceptor('image'))
+  async uploadStaticImage(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [new FileTypeValidator({ fileType: /.(jpg|jpeg|png)/ })],
+      }),
+    )
+    file: Express.Multer.File,
+  ): Promise<{ fileName: string }> {
+    const fileName = 'images/' + Date.now();
+    fs.writeFileSync(fileName, file.buffer);
+    return { fileName: fileName };
+  }
+
+  @ApiOperation({ summary: 'Загрузить статик картинку по url' })
+  @ApiResponse({ status: 200 })
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @Post('/uploadStaticImageByUrl')
+  async uploadStaticImageByUrl(
+    @Query('url') url: string,
+  ): Promise<{ fileName: string }> {
+    const fileName = 'images/' + Date.now();
+    const file = fs.createWriteStream(fileName);
+    https.get(url, (response) => {
+      response.pipe(file);
+    });
+    return { fileName: fileName };
+  }
+
+  @ApiOperation({ summary: 'Изменить видимость товара' })
+  @ApiResponse({ status: 200, type: Product })
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @Post('/changeVisible')
+  async changeVisible(
+    @Body() dto: ChangeVisibleDto,
+  ): Promise<{ success: boolean }> {
+    return this.productService.changeVisible(dto);
+  }
+
+  @ApiOperation({ summary: 'Все товары вместе сс удаленными' })
+  @ApiResponse({ status: 200, type: Product })
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @Post('/allProducts')
+  async allProducts(@Query('row') row: number): Promise<Product[]> {
+    return this.productService.allProducts(row);
   }
 
   @ApiOperation({ summary: 'Список продуктов' })
@@ -81,7 +148,7 @@ export class ProductController {
 
   @ApiOperation({ summary: 'Редактирование продукты' })
   @ApiResponse({ status: 200, type: [Product] })
-  @Put('/editProduct')
+  @Post('/editProduct')
   editProduct(@Body() dto: EditProductDto): Promise<Product> {
     return this.productService.editProduct(dto);
   }
@@ -122,10 +189,17 @@ export class ProductController {
     return this.productService.search(search, row);
   }
 
-  @ApiOperation({ summary: 'Получить список категорий' })
+  @ApiOperation({ summary: 'Получить список видимых категорий' })
   @ApiResponse({ status: 200, type: [Product] })
-  @Get('/getByCategories')
-  getByCategories() {
+  @Get('/visibleCategories')
+  visibleCategories() {
+    return this.productService.allVisibleCategories();
+  }
+
+  @ApiOperation({ summary: 'Получить список всех категорий' })
+  @ApiResponse({ status: 200, type: [Product] })
+  @Get('/allCategories')
+  allCategories() {
     return this.productService.allCategories();
   }
 
@@ -141,6 +215,15 @@ export class ProductController {
   @Get('/countPagesRecommended')
   countPagesRecommended() {
     return this.productService.recommendedCountPage();
+  }
+
+  @ApiOperation({ summary: 'Получить колв-во страниц для продуктов и скрытых' })
+  @ApiResponse({ status: 200, type: [Product] })
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @Get('/allProductsCountPage')
+  allProductsCountPage() {
+    return this.productService.getAllProductsCountPage();
   }
 
   @ApiOperation({ summary: 'Получить колв-во страниц для продуктов' })

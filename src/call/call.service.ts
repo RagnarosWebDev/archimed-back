@@ -22,6 +22,11 @@ export class CallService {
     });
   }
 
+  async count() {
+    const count: number = await this.callRepository.count({});
+    return { pages: Math.floor(count / 3) + (count % 20 == 0 ? 0 : 1) };
+  }
+
   async changeStatus(dto: EditStatusDto) {
     const [rowsCount] = await this.callRepository.update(
       {

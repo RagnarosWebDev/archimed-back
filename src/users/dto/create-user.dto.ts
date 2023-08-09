@@ -35,9 +35,6 @@ export class CreateUserDto {
   })
   phone: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(5)
   @ApiProperty({
     example: 'Тест Тестович',
     description: 'Имя и фамилия',
@@ -50,9 +47,6 @@ export class CreateUserDto {
   })
   website?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(3)
   @ApiProperty({
     example: 'Что-то',
     description: 'Что-то',

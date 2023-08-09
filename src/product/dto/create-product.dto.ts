@@ -40,9 +40,11 @@ export class CreateProductDto {
     example: Array.of<CreateVariantsDto>({
       variants: ['КГ'],
       price: 1000,
-      count: 100,
+      availableCount: 100,
+      minCount: 1,
       secondPrice: 1000,
       thirdPrice: 100,
+      fourthPrice: 1000,
     }),
     description: 'Список вариацих и из значений',
   })
@@ -52,7 +54,7 @@ export class CreateProductDto {
     example: 'Категория',
     description: 'Категория',
   })
-  category: string;
+  category: string[];
 }
 
 class CreateVariantsDto {
@@ -78,7 +80,18 @@ class CreateVariantsDto {
   thirdPrice: number;
   @ApiProperty({
     example: 1000,
+    description: 'Цена',
+  })
+  fourthPrice: number;
+  @ApiProperty({
+    example: 1000,
     description: 'Кол-во',
   })
-  count: number;
+  availableCount: number;
+
+  @ApiProperty({
+    example: 1000,
+    description: 'Мин упаковка',
+  })
+  minCount: number;
 }

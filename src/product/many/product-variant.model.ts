@@ -69,6 +69,35 @@ export class ProductVariant extends Model<ProductVariant> {
   })
   availableCount: number;
 
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  @ApiProperty({
+    example: 1000,
+    description: 'Мин упаковка',
+  })
+  minCount: number;
+
+  @ApiProperty({
+    example: 1000,
+    description: 'Цена',
+  })
+  @Column({
+    type: DataType.DOUBLE,
+    allowNull: false,
+  })
+  fourthPrice: number;
+
+  @Column({
+    type: DataType.STRING,
+  })
+  @ApiProperty({
+    example: '/data.png',
+    description: 'Картинка',
+  })
+  image: string;
+
   @BelongsToMany(() => ValueVariant, () => ProductVariantVariants)
   valueVariants: ValueVariant[];
 

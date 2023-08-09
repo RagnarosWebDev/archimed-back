@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Put,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -43,9 +35,18 @@ export class CallController {
     return this.callService.all(row);
   }
 
+  @ApiOperation({ summary: 'Посмотреть кол-во записей' })
+  @ApiResponse({ status: 200, type: [Call] })
+  @Get('/count')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  count() {
+    return this.callService.count();
+  }
+
   @ApiOperation({ summary: 'Изменить статус' })
   @ApiResponse({ status: 200, type: Call })
-  @Put('/changeStatus')
+  @Post('/changeStatus')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   changeStatus(@Body() dto: EditStatusDto) {

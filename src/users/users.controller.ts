@@ -2,7 +2,7 @@ import {
   Body,
   Controller,
   Get,
-  Put,
+  Post,
   Query,
   Req,
   UseGuards,
@@ -59,11 +59,21 @@ export class UsersController {
   getAll(@Query('row') row: number) {
     return this.userService.getAllUsers(row);
   }
+
+  @ApiOperation({ summary: 'Получение кол-ва страниц пользователей' })
+  @ApiResponse({ status: 200 })
+  @Roles(Role.ADMIN)
+  @UseGuards(RolesGuard)
+  @Get('/countPages')
+  countPages() {
+    return this.userService.countPages();
+  }
+
   @ApiOperation({ summary: 'Редактирование пользователя' })
   @ApiResponse({ status: 200, type: [User] })
-  @Roles(Role.USER)
+  @Roles(Role.USER, Role.ADMIN)
   @UseGuards(RolesGuard)
-  @Put('edit')
+  @Post('edit')
   edit(@Req() req: Request, @Body() dto: EditUserDto) {
     const user: User = this.jwtService.verify(
       req.headers.authorization.split(' ')[1],
