@@ -14,28 +14,16 @@ import { ProductVariantVariants } from './product-variant-variants.model';
 import { Product } from '../product.model';
 import { OrderValue } from '../../order/order-value.model';
 
-@Table({ tableName: 'product-variant', createdAt: false, updatedAt: false })
-export class ProductVariant extends Model<ProductVariant> {
+export class CreationProductVariantCreationAttributes {
   @ApiProperty({
     example: 1,
     description: 'Id',
   })
   id: number;
 
-  @ForeignKey(() => Product)
-  @Column
-  productId: number;
-
-  @BelongsTo(() => Product, 'productId')
-  product: Product;
-
   @ApiProperty({
     example: 1000,
     description: 'Цена',
-  })
-  @Column({
-    type: DataType.DOUBLE,
-    allowNull: false,
   })
   price: number;
 
@@ -43,19 +31,11 @@ export class ProductVariant extends Model<ProductVariant> {
     example: 1000,
     description: 'Цена',
   })
-  @Column({
-    type: DataType.DOUBLE,
-    allowNull: false,
-  })
   secondPrice: number;
 
   @ApiProperty({
     example: 1000,
     description: 'Цена',
-  })
-  @Column({
-    type: DataType.DOUBLE,
-    allowNull: false,
   })
   thirdPrice: number;
 
@@ -63,16 +43,8 @@ export class ProductVariant extends Model<ProductVariant> {
     example: 1000,
     description: 'Кол-во доступно',
   })
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-  })
   availableCount: number;
 
-  @Column({
-    type: DataType.INTEGER,
-    allowNull: false,
-  })
   @ApiProperty({
     example: 1000,
     description: 'Мин упаковка',
@@ -83,6 +55,57 @@ export class ProductVariant extends Model<ProductVariant> {
     example: 1000,
     description: 'Цена',
   })
+  fourthPrice: number;
+
+  @ApiProperty({
+    example: '/data.png',
+    description: 'Картинка',
+  })
+  image: string;
+
+  productId: number;
+}
+@Table({ tableName: 'product-variant', createdAt: false, updatedAt: false })
+export class ProductVariant extends Model<CreationProductVariantCreationAttributes> {
+  id: number;
+
+  @ForeignKey(() => Product)
+  @Column
+  productId: number;
+
+  @BelongsTo(() => Product, 'productId')
+  product: Product;
+
+  @Column({
+    type: DataType.DOUBLE,
+    allowNull: false,
+  })
+  price: number;
+
+  @Column({
+    type: DataType.DOUBLE,
+    allowNull: false,
+  })
+  secondPrice: number;
+
+  @Column({
+    type: DataType.DOUBLE,
+    allowNull: false,
+  })
+  thirdPrice: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  availableCount: number;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  minCount: number;
+
   @Column({
     type: DataType.DOUBLE,
     allowNull: false,
@@ -91,10 +114,6 @@ export class ProductVariant extends Model<ProductVariant> {
 
   @Column({
     type: DataType.STRING,
-  })
-  @ApiProperty({
-    example: '/data.png',
-    description: 'Картинка',
   })
   image: string;
 

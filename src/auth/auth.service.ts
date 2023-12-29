@@ -58,7 +58,6 @@ export class AuthService {
         message: 'Некорректный email или пароль',
       });
     }
-    console.log(await bcrypt.hash(userDto.password, 5));
     const passwordEquals = await bcrypt.compare(
       userDto.password,
       user.password,

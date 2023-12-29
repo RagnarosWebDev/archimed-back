@@ -3,6 +3,7 @@ import { CreateCallDto } from './dto/create-call.dto';
 import { EditStatusDto } from './dto/edit-status.dto';
 import { InjectModel } from '@nestjs/sequelize';
 import { Call, CallStatus } from './call.model';
+import { calculateCountPage, rowed } from '../utils/shared.extension';
 
 @Injectable()
 export class CallService {
@@ -15,16 +16,12 @@ export class CallService {
   }
 
   async all(row: number) {
-    return this.callRepository.findAll({
-      order: ['id'],
-      limit: 20,
-      offset: row * 20,
-    });
+    return this.callRepository.findAll(rowed(row));
   }
 
   async count() {
-    const count: number = await this.callRepository.count({});
-    return { pages: Math.floor(count / 3) + (count % 20 == 0 ? 0 : 1) };
+    const count = await this.callRepository.count({});
+    return { pages: calculateCountPage(count) };
   }
 
   async changeStatus(dto: EditStatusDto) {

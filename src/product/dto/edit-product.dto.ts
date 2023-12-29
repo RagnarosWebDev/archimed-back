@@ -1,56 +1,12 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
+import { CreationProductAttributes } from '../product.model';
 
-export class EditProductDto {
+export class EditProductDto extends PartialType(
+  OmitType(CreationProductAttributes, ['id']),
+) {
   @ApiProperty({
     example: 1,
     description: 'Id',
   })
   id: number;
-
-  @ApiProperty({
-    example: true,
-    description: 'Visible',
-  })
-  visible: boolean;
-
-  @ApiProperty({
-    example: 'А',
-    description: 'Имя',
-  })
-  name: string;
-  @ApiProperty({
-    example: 'Описание',
-    description: 'Описание товара',
-  })
-  description: string;
-  @ApiProperty({
-    example: 'Производитель',
-    description: 'Производитель',
-  })
-  producer: string;
-  @ApiProperty({
-    example: 'Производитель',
-    description: 'Короткое имя производителя',
-  })
-  shortProducer: string;
-  @ApiProperty({
-    example: 'Китай',
-    description: 'Страна производителя',
-  })
-  countryProducer: string;
-  @ApiProperty({
-    example: 100,
-    description: 'Кол-во в упаковке',
-  })
-  count: number;
-  @ApiProperty({
-    example: true,
-    description: 'Рекомендованный ли товар?',
-  })
-  isRecommended: boolean;
-  @ApiProperty({
-    example: 'Категория',
-    description: 'Категория',
-  })
-  category: string[];
 }

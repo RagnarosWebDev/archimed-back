@@ -21,16 +21,15 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles-auth.decorator';
 import { Role } from '../users/role.model';
 import { ProductService } from './product.service';
-import { Product } from './product.model';
+import { BaseData, Product } from './product.model';
 import { CreateProductDto } from './dto/create-product.dto';
 import { EditProductDto } from './dto/edit-product.dto';
 import { ProductVariant } from './many/product-variant.model';
-import { EditProductVariantDto } from './dto/edit-product-variant.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as fs from 'fs';
-import { EditRecommendedDto } from './dto/edit-recommended.dto';
-import { ChangeVisibleDto } from './dto/change-visible.dto';
 import * as https from 'https';
+import { EditProductVariantDto } from './dto/edit-product-variant.dto';
+import { FilterProductDto } from './dto/filter-product.dto';
 
 @ApiTags('product')
 @ApiBearerAuth()
@@ -47,13 +46,13 @@ export class ProductController {
     return this.productService.createProduct(dto);
   }
 
-  @ApiOperation({ summary: 'Изменить рекомендацию продукта' })
-  @ApiResponse({ status: 200, type: Product })
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
-  @Post('/changeRecommended')
-  changeRecommended(@Body() dto: EditRecommendedDto): Promise<Product> {
-    return this.productService.editRecommended(dto);
+  @ApiOperation({ summary: 'Редактирование вариации продукта' })
+  @ApiResponse({ status: 200, type: [ProductVariant] })
+  @Post('/editProductVariant')
+  editProductVariant(
+    @Body() dto: EditProductVariantDto,
+  ): Promise<ProductVariant> {
+    return this.productService.editProductVariant(dto);
   }
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Загрузить картинку' })
@@ -112,17 +111,6 @@ export class ProductController {
     return { fileName: fileName };
   }
 
-  @ApiOperation({ summary: 'Изменить видимость товара' })
-  @ApiResponse({ status: 200, type: Product })
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
-  @Post('/changeVisible')
-  async changeVisible(
-    @Body() dto: ChangeVisibleDto,
-  ): Promise<{ success: boolean }> {
-    return this.productService.changeVisible(dto);
-  }
-
   @ApiOperation({ summary: 'Все товары вместе сс удаленными' })
   @ApiResponse({ status: 200, type: Product })
   @UseGuards(RolesGuard)
@@ -142,8 +130,11 @@ export class ProductController {
   @ApiOperation({ summary: 'Список рекомендуемых продуктов' })
   @ApiResponse({ status: 200, type: [Product] })
   @Get('/recommended')
-  recommended(@Query('row') row: number): Promise<Product[]> {
-    return this.productService.recommended(row);
+  recommended(
+    @Query('row') row: number,
+    @Query('count') count: number,
+  ): Promise<Product[]> {
+    return this.productService.recommended(row, count);
   }
 
   @ApiOperation({ summary: 'Редактирование продукты' })
@@ -153,30 +144,27 @@ export class ProductController {
     return this.productService.editProduct(dto);
   }
 
-  @ApiOperation({ summary: 'Редактирование вариации продукта' })
-  @ApiResponse({ status: 200, type: [ProductVariant] })
-  @Post('/editProductVariant')
-  editProductVariant(
-    @Body() dto: EditProductVariantDto,
-  ): Promise<ProductVariant> {
-    return this.productService.editProductVariant(dto);
-  }
-
   @ApiOperation({ summary: 'Получить продукт по Id' })
   @ApiResponse({ status: 200, type: Product })
   @Get('/')
-  getById(@Query('id') id: number): Promise<Product> {
-    return this.productService.getById(id);
+  getById(@Query('symbolCode') symbolCode: string): Promise<Product> {
+    return this.productService.getBySymbolCode(symbolCode);
   }
 
   @ApiOperation({ summary: 'Получить продукты по категории' })
   @ApiResponse({ status: 200, type: [Product] })
-  @Get('/searchCategories')
+  @Post('/searchCategories')
   getByCategory(
-    @Query('category') category: string,
-    @Query('row') row: number,
-  ): Promise<Product[]> {
-    return this.productService.getByCategory(category, row);
+    @Body() dto: FilterProductDto,
+  ): Promise<Record<string, Product[]>> {
+    return this.productService.getByCategory(dto);
+  }
+
+  @ApiOperation({ summary: 'Список категорий' })
+  @ApiResponse({ status: 200, type: [Product] })
+  @Get('/baseDatas')
+  baseDatas(): Promise<BaseData> {
+    return this.productService.baseDatas();
   }
 
   @ApiOperation({ summary: 'Поиск продуктов' })
@@ -213,8 +201,8 @@ export class ProductController {
   @ApiOperation({ summary: 'Получить колв-во страниц для рекмоендованных' })
   @ApiResponse({ status: 200, type: [Product] })
   @Get('/countPagesRecommended')
-  countPagesRecommended() {
-    return this.productService.recommendedCountPage();
+  countPagesRecommended(@Query('count') count: number) {
+    return this.productService.recommendedCountPage(count);
   }
 
   @ApiOperation({ summary: 'Получить колв-во страниц для продуктов и скрытых' })

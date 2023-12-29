@@ -18,7 +18,6 @@ import { EditStatusDto } from './dto/edit-status.dto';
 @ApiBearerAuth()
 export class CallController {
   constructor(private callService: CallService) {}
-
   @ApiOperation({ summary: 'Создать запись' })
   @ApiResponse({ status: 200, type: Call })
   @Post('/create')

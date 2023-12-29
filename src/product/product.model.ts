@@ -11,8 +11,7 @@ import { ProductVariant } from './many/product-variant.model';
 import { Variant } from '../variant/variant.model';
 import { ProductVariantTable } from './many/product-variant-table';
 
-@Table({ tableName: 'product', createdAt: true, updatedAt: true })
-export class Product extends Model<Product> {
+export class CreationProductAttributes {
   @ApiProperty({
     example: 1,
     description: 'Уникальный идентификатор товара',
@@ -23,19 +22,11 @@ export class Product extends Model<Product> {
     example: 'Зеркало',
     description: 'Имя товара',
   })
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
   name: string;
 
   @ApiProperty({
     example: ['Категории'],
     description: 'Категории',
-  })
-  @Column({
-    type: DataType.ARRAY(DataType.STRING),
-    allowNull: false,
   })
   category: string[];
 
@@ -43,19 +34,11 @@ export class Product extends Model<Product> {
     example: 'Что-то',
     description: 'Описание',
   })
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
   description: string;
 
   @ApiProperty({
     example: 'Кто-кто',
     description: 'Производитель',
-  })
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
   })
   producer: string;
 
@@ -63,29 +46,23 @@ export class Product extends Model<Product> {
     example: 'Кто-кто',
     description: 'Производитель в короткой форме',
   })
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
   shortProducer: string;
 
   @ApiProperty({
     example: 'Китай',
     description: 'Старана производителя',
   })
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-  })
   countryProducer: string;
+
+  @ApiProperty({
+    example: 'symbol-code',
+    description: 'symbol code',
+  })
+  symbolCode: string;
 
   @ApiProperty({
     example: 1000,
     description: 'Кол-во в упаковке',
-  })
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
   })
   count: number;
 
@@ -93,6 +70,67 @@ export class Product extends Model<Product> {
     example: true,
     description: 'Видно ли товар',
   })
+  visible: boolean;
+
+  @ApiProperty({
+    example: true,
+    description: 'Являетя ли товар рекомендуемым',
+  })
+  isRecommended: boolean;
+}
+
+@Table({ tableName: 'product', createdAt: true, updatedAt: true })
+export class Product extends Model<CreationProductAttributes> {
+  id: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  name: string;
+
+  @Column({
+    type: DataType.ARRAY(DataType.STRING),
+    allowNull: false,
+  })
+  category: string[];
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  description: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  producer: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  shortProducer: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  countryProducer: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  symbolCode: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  count: number;
+
   @Column({
     type: DataType.BOOLEAN,
     allowNull: false,
@@ -103,10 +141,6 @@ export class Product extends Model<Product> {
     type: DataType.BOOLEAN,
     allowNull: false,
   })
-  @ApiProperty({
-    example: true,
-    description: 'Являетя ли товар рекомендуемым',
-  })
   isRecommended: boolean;
 
   @HasMany(() => ProductVariant, 'productId')
@@ -115,3 +149,5 @@ export class Product extends Model<Product> {
   @BelongsToMany(() => Variant, () => ProductVariantTable)
   variants: Variant[];
 }
+
+export type BaseData = Record<string, string[]>;

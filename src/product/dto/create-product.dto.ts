@@ -1,43 +1,13 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { CreationProductAttributes } from '../product.model';
+import { CreationProductVariantCreationAttributes } from '../many/product-variant.model';
 
-export class CreateProductDto {
-  @ApiProperty({
-    example: 'А',
-    description: 'Имя',
-  })
-  name: string;
-  @ApiProperty({
-    example: 'Описание',
-    description: 'Описание товара',
-  })
-  description: string;
-  @ApiProperty({
-    example: 'Производитель',
-    description: 'Производитель',
-  })
-  producer: string;
-  @ApiProperty({
-    example: 'Производитель',
-    description: 'Короткое имя производителя',
-  })
-  shortProducer: string;
-  @ApiProperty({
-    example: 'Китай',
-    description: 'Страна производителя',
-  })
-  countryProducer: string;
-  @ApiProperty({
-    example: 100,
-    description: 'Кол-во в упаковке',
-  })
-  count: number;
-  @ApiProperty({
-    example: ['Вес'],
-    description: 'Типы вариантов',
-  })
-  variants: string[];
+export class CreateProductDto extends OmitType(CreationProductAttributes, [
+  'id',
+]) {
   @ApiProperty({
     example: Array.of<CreateVariantsDto>({
+      productId: 1,
       variants: ['КГ'],
       price: 1000,
       availableCount: 100,
@@ -51,47 +21,18 @@ export class CreateProductDto {
   productVariants: CreateVariantsDto[];
 
   @ApiProperty({
-    example: 'Категория',
-    description: 'Категория',
+    example: ['Вес'],
   })
-  category: string[];
+  variants: string[];
 }
 
-class CreateVariantsDto {
+class CreateVariantsDto extends OmitType(
+  CreationProductVariantCreationAttributes,
+  ['id', 'image'],
+) {
   @ApiProperty({
     example: ['5гр'],
     description: 'Список из значений вариантов',
   })
   variants: string[];
-  @ApiProperty({
-    example: 1000,
-    description: 'Цена',
-  })
-  price: number;
-  @ApiProperty({
-    example: 1000,
-    description: 'Цена',
-  })
-  secondPrice: number;
-  @ApiProperty({
-    example: 1000,
-    description: 'Цена',
-  })
-  thirdPrice: number;
-  @ApiProperty({
-    example: 1000,
-    description: 'Цена',
-  })
-  fourthPrice: number;
-  @ApiProperty({
-    example: 1000,
-    description: 'Кол-во',
-  })
-  availableCount: number;
-
-  @ApiProperty({
-    example: 1000,
-    description: 'Мин упаковка',
-  })
-  minCount: number;
 }
