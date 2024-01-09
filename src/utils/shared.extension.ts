@@ -1,5 +1,7 @@
 import { Attributes, FindOptions, Op, Order, WhereOptions } from 'sequelize';
 import { Model } from 'sequelize-typescript';
+import { DECORATORS } from '@nestjs/swagger/dist/constants';
+import { Type } from '@nestjs/common';
 
 export const filteredFields = <T extends Model>(
   keys: (keyof T)[],
@@ -37,30 +39,43 @@ export const rowed = <T extends Model>(
   };
 };
 
-export const getFields = <T extends object>(
-  fields: (keyof T)[],
-  object: T,
-): T => {
-  const data = { ...object };
-  for (const field in data) {
-    if (!fields.includes(field)) delete data[field];
-  }
-
-  return data;
-};
-
-export const filterNullableOrUndefined = <T>(object: T): T => {
-  const data = { ...object };
-
-  for (const field in data) {
-    const value = data[field];
-    if (value == undefined || value == null) {
-      delete data[field];
-    }
-  }
-  return data;
-};
-
 export const calculateCountPage = (count: number, delimer = 20) => {
   return Math.floor(count / delimer) + (count % delimer == 0 ? 0 : 1);
+};
+
+export const destroyFields = <T>(
+  value: T,
+  type: Type<T>,
+  exclude: (keyof T)[] = [],
+): T => {
+  const resObj = new type();
+  const properties: string[] = Reflect.getMetadata(
+    DECORATORS.API_MODEL_PROPERTIES_ARRAY,
+    resObj,
+  ).map((e: string) => e.substring(1));
+  for (const currentProperty in value) {
+    if (
+      properties.includes(currentProperty) &&
+      !exclude.includes(currentProperty)
+    ) {
+      resObj[currentProperty] = value[currentProperty];
+    }
+  }
+  return resObj;
+};
+
+export const excludeFields = <T>(
+  value: T,
+  type: Type<T>,
+  list: (keyof T)[] = [],
+): T => {
+  const returned = new type();
+
+  for (const field in value) {
+    if (!list.includes(field)) {
+      returned[field] = value[field];
+    }
+  }
+
+  return returned;
 };
