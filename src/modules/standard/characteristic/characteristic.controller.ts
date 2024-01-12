@@ -13,6 +13,7 @@ import { Characteristic } from '../../../models/characteristics/characteristic.m
 import { RolesGuard } from '../../../utils/roles.guard';
 import { Roles } from '../../../utils/roles-auth.decorator';
 import { Role } from '../../../models/user/role.model';
+import { CharacteristicsByIdDto } from './dto/characteristics-by-id.dto';
 
 @ApiBearerAuth()
 @ApiTags('characteristic')
@@ -37,6 +38,13 @@ export class CharacteristicController {
     @Body() dto: AddCharacteristicDto,
   ): Promise<Characteristic> {
     return this.characteristicService.addCharacteristic(dto);
+  }
+
+  @ApiOperation({ summary: 'Получить категории по именам' })
+  @ApiResponse({ status: 200, type: [CharacteristicType] })
+  @Post('/list')
+  list(@Body() dto: CharacteristicsByIdDto): Promise<CharacteristicType[]> {
+    return this.characteristicService.getByIds(dto.names);
   }
 
   @ApiOperation({ summary: 'Получить все варианты' })

@@ -33,6 +33,7 @@ const productsIncluding = [
       {
         model: Characteristic,
         through: { attributes: [] },
+        include: [CharacteristicType],
         attributes: {
           exclude: ['variantId'],
         },
@@ -150,17 +151,87 @@ export class ProductService {
 
   async getAll(dto: FilterProductDto) {
     return await this.productRepository.findAll(
-      rowed(dto.row, {
-        where: { ...excludeFields(dto, FilterProductDto, ['row']) },
-        include: productsIncluding,
-      }),
+      rowed(
+        dto.row,
+        {
+          where: {
+            ...excludeFields(dto, FilterProductDto, [
+              'row',
+              'countItems',
+              'category',
+            ]),
+          },
+          include: [
+            {
+              model: CharacteristicProduct,
+              include: [
+                {
+                  model: Characteristic,
+                  through: { attributes: [] },
+                  include: [CharacteristicType],
+                  attributes: {
+                    exclude: ['variantId'],
+                  },
+                },
+              ],
+              attributes: {
+                exclude: ['productId'],
+              },
+            },
+            {
+              model: SubCategory,
+              through: { attributes: [] },
+              where: dto.category
+                ? {
+                    [Op.or]: {
+                      name: dto.category,
+                      categoryName: dto.category,
+                    },
+                  }
+                : {},
+            },
+          ],
+        },
+        dto.countItems,
+      ),
     );
   }
 
-  async countAll(dto: FilterUnRowedProductDto) {
-    const pages = await this.productRepository.count({ where: { ...dto } });
+  async filterItems() {
+    const producer = await this.productRepository.findAll({
+      group: ['producer'],
+      attributes: ['producer'],
+    });
 
-    return { pages: calculateCountPage(pages) };
+    const country = await this.productRepository.findAll({
+      group: ['countryProducer'],
+      attributes: ['countryProducer'],
+    });
+
+    return {
+      producer: producer.map((e) => e.producer),
+      country: country.map((e) => e.countryProducer),
+    };
+  }
+
+  async countAll(dto: FilterUnRowedProductDto) {
+    const pages = await this.productRepository.count({
+      where: {
+        ...excludeFields(dto, FilterProductDto, ['countItems', 'category']),
+      },
+      include: [
+        {
+          model: SubCategory,
+          where: dto.category
+            ? {
+                name: dto.category,
+              }
+            : {},
+        },
+      ],
+    });
+
+    return { pages: calculateCountPage(pages, dto.countItems) };
   }
 
   async getBySymbolCode(symbolCode: string) {
@@ -204,18 +275,14 @@ export class ProductService {
 
     for (const category of categories) {
       products[`${category.name}::${category.categoryName}`] =
-        await this.productRepository.findAll(
+        await this.productRepository.findAll<Product>(
           rowed(
             0,
             {
-              include: [
-                {
-                  model: SubCategory,
-                  where: {
-                    name: category.name,
-                  },
-                },
-              ],
+              where: {
+                visible: true,
+              },
+              include: productsIncluding,
             },
             dto.pageCount,
           ),

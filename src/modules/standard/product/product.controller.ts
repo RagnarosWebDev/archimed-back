@@ -1,5 +1,4 @@
 import {
-  Body,
   Controller,
   Get,
   Post,
@@ -9,6 +8,7 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiConsumes,
   ApiOperation,
   ApiResponse,
@@ -30,6 +30,7 @@ import { Role } from '../../../models/user/role.model';
 import { UploadImageDto } from './dto/upload-image.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { fileOption } from '../../../utils/files';
+import { FilterItemsDto } from './dto/filter-items.dto';
 
 @ApiTags('product')
 @ApiBearerAuth()
@@ -47,17 +48,26 @@ export class ProductController {
   @ApiOperation({ summary: 'Получить все продукты' })
   @ApiResponse({ status: 200, type: [Product] })
   @Post('/')
+  @ApiBody({ type: FilterProductDto })
   filter(
-    @Body() @TypedBody(FilterProductDto) dto: FilterProductDto,
+    @TypedBody(FilterProductDto) dto: FilterProductDto,
   ): Promise<Product[]> {
     return this.productService.getAll(dto);
   }
 
+  @ApiOperation({ summary: 'Получить фильтры' })
+  @ApiResponse({ status: 200, type: FilterItemsDto })
+  @Get('/filterItems')
+  filterItems() {
+    return this.productService.filterItems();
+  }
+
   @ApiOperation({ summary: 'Получить категории фильтрованно' })
   @ApiResponse({ status: 200, type: [Product] })
+  @ApiBody({ type: RecommendedDto })
   @Post('/groupedByCategory')
   groupByCategories(
-    @Body() @TypedBody(RecommendedDto) dto: RecommendedDto,
+    @TypedBody(RecommendedDto) dto: RecommendedDto,
   ): Promise<Record<string, Product[]>> {
     return this.productService.groupByCategories(dto);
   }
@@ -65,19 +75,21 @@ export class ProductController {
   @ApiOperation({ summary: 'Создать продукт' })
   @ApiResponse({ status: 200, type: Product })
   @Post('/create')
+  @ApiBody({
+    type: CreateProductDto,
+  })
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  create(
-    @Body() @TypedBody(CreateProductDto) dto: CreateProductDto,
-  ): Promise<Product> {
+  create(@TypedBody(CreateProductDto) dto: CreateProductDto): Promise<Product> {
     return this.productService.createProduct(dto);
   }
 
   @ApiOperation({ summary: 'Список рекомендуемых продуктов' })
   @ApiResponse({ status: 200, type: CountDto })
   @Post('/count')
-  count(
-    @Body() @TypedBody(FilterUnRowedProductDto) dto: FilterUnRowedProductDto,
+  @ApiBody({ type: FilterUnRowedProductDto })
+  async count(
+    @TypedBody(FilterUnRowedProductDto) dto: FilterUnRowedProductDto,
   ): Promise<CountDto> {
     return this.productService.countAll(dto);
   }
@@ -93,7 +105,7 @@ export class ProductController {
       ...fileOption,
     }),
   )
-  async updateImage(@Body() @TypedBody(UploadImageDto) dto: UploadImageDto) {
+  async updateImage(@TypedBody(UploadImageDto) dto: UploadImageDto) {
     return this.productService.updateImage(dto);
   }
 }

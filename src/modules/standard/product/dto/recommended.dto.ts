@@ -1,4 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, IntersectionType } from '@nestjs/swagger';
+import { RowDto } from '../../../../utils/row.dto';
 
 export class RecommendedDto {
   @ApiProperty({
@@ -6,4 +7,12 @@ export class RecommendedDto {
     description: 'Пагинация',
   })
   pageCount: number;
+}
+
+export class GetByCategoryDto extends IntersectionType(RecommendedDto, RowDto) {
+  @ApiProperty({
+    example: 'asd',
+    description: 'Категории',
+  })
+  category: string;
 }
