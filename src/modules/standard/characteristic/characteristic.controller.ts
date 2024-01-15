@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -14,6 +15,9 @@ import { RolesGuard } from '../../../utils/roles.guard';
 import { Roles } from '../../../utils/roles-auth.decorator';
 import { Role } from '../../../models/user/role.model';
 import { CharacteristicsByIdDto } from './dto/characteristics-by-id.dto';
+import { AllByIdsDto } from './dto/all-by-ids.dto';
+import { TypedBody } from '../../../utils/auth-data.decorator';
+import { Product } from '../../../models/product.model';
 
 @ApiBearerAuth()
 @ApiTags('characteristic')
@@ -38,6 +42,16 @@ export class CharacteristicController {
     @Body() dto: AddCharacteristicDto,
   ): Promise<Characteristic> {
     return this.characteristicService.addCharacteristic(dto);
+  }
+
+  @ApiOperation({ summary: 'Добавить продукты с вариантами по ids' })
+  @ApiResponse({ status: 200 })
+  @Post('/getProductByIds')
+  @ApiBody({ type: AllByIdsDto })
+  getProductByIds(
+    @TypedBody(AllByIdsDto) dto: AllByIdsDto,
+  ): Promise<Product[]> {
+    return this.characteristicService.getAllProductIds(dto.ids);
   }
 
   @ApiOperation({ summary: 'Получить категории по именам' })

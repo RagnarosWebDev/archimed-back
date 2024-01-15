@@ -15,7 +15,10 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ProductService } from './product.service';
-import { Product } from '../../../models/product.model';
+import {
+  CreationProductAttributes,
+  Product,
+} from '../../../models/product.model';
 import {
   FilterProductDto,
   FilterUnRowedProductDto,
@@ -41,7 +44,9 @@ export class ProductController {
   @ApiOperation({ summary: 'Получить продукт по symbol code' })
   @ApiResponse({ status: 200, type: Product })
   @Get('/getBySymbolCode')
-  getBySymbolCode(@Query('symbolCode') symbolCode: string): Promise<Product> {
+  getBySymbolCode(
+    @Query('symbolCode') symbolCode: string,
+  ): Promise<CreationProductAttributes> {
     return this.productService.getBySymbolCode(symbolCode);
   }
 
@@ -83,7 +88,6 @@ export class ProductController {
   create(@TypedBody(CreateProductDto) dto: CreateProductDto): Promise<Product> {
     return this.productService.createProduct(dto);
   }
-
   @ApiOperation({ summary: 'Список рекомендуемых продуктов' })
   @ApiResponse({ status: 200, type: CountDto })
   @Post('/count')
@@ -94,12 +98,20 @@ export class ProductController {
     return this.productService.countAll(dto);
   }
 
+  @ApiOperation({ summary: 'Список символьных кодов' })
+  @ApiResponse({ status: 200, type: [CreationProductAttributes] })
+  @Get('/getAllSymbolCodes')
+  async getAllSymbolCodes(): Promise<Product[]> {
+    return this.productService.getAllSymbolCodes();
+  }
+
   @ApiOperation({ summary: 'обновить картинку продукта' })
   @ApiResponse({ status: 200, type: Product })
   @Post('/updateImage')
   @UseGuards(RolesGuard)
   @ApiConsumes('multipart/form-data')
   @Roles(Role.ADMIN)
+  @ApiBody({ type: UploadImageDto })
   @UseInterceptors(
     FileInterceptor('image', {
       ...fileOption,

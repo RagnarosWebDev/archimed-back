@@ -9,7 +9,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { CharacteristicProduct } from './charactertistics-product/characteristic-product.model';
 import { CategoryProduct } from './category/category-product.model';
-import { SubCategory } from './category/sub-category.model';
+import { Category } from './category/category.model';
 
 export class CreationProductAttributes {
   @ApiProperty({
@@ -71,6 +71,24 @@ export class CreationProductAttributes {
     description: 'Являетя ли товар рекомендуемым',
   })
   isRecommended: boolean;
+
+  @ApiProperty({
+    example: 'template',
+    description: 'Шаблон',
+  })
+  templateTitle: string;
+
+  @ApiProperty({
+    example: 'template',
+    description: 'Шаблон',
+  })
+  templateDescription: string;
+
+  @ApiProperty({
+    example: true,
+    description: 'Индексировать или нет',
+  })
+  isIndexing: boolean;
 }
 
 @Table({ tableName: 'product', createdAt: true, updatedAt: true })
@@ -131,9 +149,27 @@ export class Product extends Model<CreationProductAttributes> {
   })
   isRecommended: boolean;
 
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  templateTitle: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+  })
+  templateDescription: string;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    allowNull: false,
+  })
+  isIndexing: boolean;
+
   @HasMany(() => CharacteristicProduct, 'productId')
   characteristicProducts: CharacteristicProduct[];
 
-  @BelongsToMany(() => SubCategory, () => CategoryProduct)
-  categories: SubCategory[];
+  @BelongsToMany(() => Category, () => CategoryProduct)
+  categories: Category[];
 }

@@ -5,7 +5,7 @@ import { ProductService } from './product.service';
 import { Product } from '../../../models/product.model';
 import { CharacteristicProduct } from '../../../models/charactertistics-product/characteristic-product.model';
 import { CharacteristicType } from '../../../models/characteristics/characteristic-type.model';
-import { SubCategory } from '../../../models/category/sub-category.model';
+import { Category } from '../../../models/category/category.model';
 
 @Module({
   controllers: [ProductController],
@@ -15,7 +15,7 @@ import { SubCategory } from '../../../models/category/sub-category.model';
       Product,
       CharacteristicProduct,
       CharacteristicType,
-      SubCategory,
+      Category,
     ]),
   ],
 })

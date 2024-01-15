@@ -1,7 +1,7 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { CreationProductAttributes } from '../../../../models/product.model';
 import { CharacteristicProductCreationAttributes } from '../../../../models/charactertistics-product/characteristic-product.model';
-import { CreateSubCategoryDto } from '../../category/dto/create-sub-category.dto';
+import { CreateCategoryDto } from '../../category/dto/create-category.dto';
 
 export class CreateProductDto extends OmitType(CreationProductAttributes, [
   'id',
@@ -26,15 +26,10 @@ export class CreateProductDto extends OmitType(CreationProductAttributes, [
   variants: string[];
 
   @ApiProperty({
-    example: [
-      {
-        name: 'asd',
-        categoryName: 'asd',
-      },
-    ],
-    type: [CreateSubCategoryDto],
+    example: ['asd', 'asd1'],
+    type: [CreateCategoryDto],
   })
-  categories: CreateSubCategoryDto[];
+  categories: string[];
 }
 
 export class CreateVariantsDto extends OmitType(
