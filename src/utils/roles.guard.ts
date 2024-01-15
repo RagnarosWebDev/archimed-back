@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Reflector } from '@nestjs/core';
-import { ROLES_KEY } from './roles-auth.decorator';
+import { REQUIRED_KEY, ROLES_KEY } from './roles-auth.decorator';
 import { InjectModel } from '@nestjs/sequelize';
 import { User } from '../models/user/user.model';
 import { Role } from '../models/user/role.model';
@@ -27,6 +27,10 @@ export class RolesGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
+    const isNotRequired = this.reflector.getAllAndOverride<boolean | null>(
+      REQUIRED_KEY,
+      [context.getHandler(), context.getClass()],
+    );
     const authHeader = req.headers.authorization;
     if (!authHeader) {
       throw new ForbiddenException('Токена нет в заголовке');

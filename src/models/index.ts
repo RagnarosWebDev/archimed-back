@@ -6,8 +6,10 @@ import { CharacteristicsToProduct } from './charactertistics-product/characteris
 import { Characteristic } from './characteristics/characteristic.model';
 import { CharacteristicType } from './characteristics/characteristic-type.model';
 import { ModelCtor } from 'sequelize-typescript';
-import { SubCategory } from './category/sub-category.model';
+import { Category } from './category/category.model';
 import { CategoryProduct } from './category/category-product.model';
+import { Order } from './order/order.model';
+import { OrderProduct } from './order/order.product.model';
 
 export const models: ModelCtor[] = [
   Product,
@@ -22,6 +24,9 @@ export const models: ModelCtor[] = [
   Characteristic,
   CharacteristicType,
 
-  SubCategory,
+  Category,
   CategoryProduct,
+
+  Order,
+  OrderProduct,
 ];

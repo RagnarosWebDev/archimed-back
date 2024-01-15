@@ -5,6 +5,8 @@ import { Characteristic } from '../../../models/characteristics/characteristic.m
 import { CreateCharacteristicsDto } from './dto/create-characteristics.dto';
 import { AddCharacteristicDto } from './dto/add-characteristic.dto';
 import { Op } from 'sequelize';
+import { CharacteristicProduct } from '../../../models/charactertistics-product/characteristic-product.model';
+import { Product } from '../../../models/product.model';
 
 @Injectable()
 export class CharacteristicService {
@@ -13,6 +15,8 @@ export class CharacteristicService {
     private characteristicTypeRepository: typeof CharacteristicType,
     @InjectModel(Characteristic)
     private characteristicRepository: typeof Characteristic,
+    @InjectModel(Product)
+    private productRepository: typeof Product,
   ) {}
 
   async all(): Promise<CharacteristicType[]> {
@@ -91,6 +95,30 @@ export class CharacteristicService {
     return this.characteristicRepository.create({
       name: dto.characteristic,
       characteristicId: dto.typeId,
+    });
+  }
+
+  async getAllProductIds(ids: number[]) {
+    return this.productRepository.findAll({
+      where: {
+        visible: true,
+      },
+      include: [
+        {
+          model: CharacteristicProduct,
+          include: [
+            {
+              model: Characteristic,
+              include: [CharacteristicType],
+            },
+          ],
+          where: {
+            id: {
+              [Op.in]: ids,
+            },
+          },
+        },
+      ],
     });
   }
 }

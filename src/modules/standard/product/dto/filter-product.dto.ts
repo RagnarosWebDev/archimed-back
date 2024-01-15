@@ -1,27 +1,36 @@
-import {
-  ApiProperty,
-  IntersectionType,
-  OmitType,
-  PartialType,
-} from '@nestjs/swagger';
-import { CreateProductDto } from './create-product.dto';
+import { ApiProperty, ApiPropertyOptional, OmitType } from '@nestjs/swagger';
 import { RowDto } from '../../../../utils/row.dto';
 
-export class FilterProductDto extends IntersectionType(
-  PartialType(OmitType(CreateProductDto, ['categories'])),
-  RowDto,
-) {
+export class FilterProductDto extends RowDto {
   @ApiProperty({
     example: 5,
     description: 'Количество элементов',
   })
-  countItems: number;
+  itemsCount: number;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: 'asd',
     description: 'Категория',
   })
-  category: string;
+  category?: string;
+
+  @ApiPropertyOptional({
+    example: 'Китай',
+    description: 'Страна',
+  })
+  country?: string;
+
+  @ApiPropertyOptional({
+    example: 'asd',
+    description: 'Запрос на поиск',
+  })
+  query?: string;
+
+  @ApiPropertyOptional({
+    example: 'Кто-кто',
+    description: 'Производитель',
+  })
+  producer?: string;
 }
 
 export class FilterUnRowedProductDto extends OmitType(FilterProductDto, [

@@ -5,26 +5,27 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Product } from '../../../models/product.model';
+import {
+  CreationProductAttributes,
+  Product,
+} from '../../../models/product.model';
 import { CreateProductDto, CreateVariantsDto } from './dto/create-product.dto';
 import { CharacteristicType } from '../../../models/characteristics/characteristic-type.model';
 import { Op } from 'sequelize';
 import { CharacteristicProduct } from '../../../models/charactertistics-product/characteristic-product.model';
 import { Characteristic } from '../../../models/characteristics/characteristic.model';
-import {
-  calculateCountPage,
-  destroyFields,
-  excludeFields,
-  rowed,
-} from '../../../utils/shared.extension';
+import { calculateCountPage, rowed } from '../../../utils/shared.extension';
 import {
   FilterProductDto,
   FilterUnRowedProductDto,
 } from './dto/filter-product.dto';
-import { CreateSubCategoryDto } from '../category/dto/create-sub-category.dto';
-import { SubCategory } from '../../../models/category/sub-category.model';
+import {
+  Category,
+  CategoryCreationAttributes,
+} from '../../../models/category/category.model';
 import { RecommendedDto } from './dto/recommended.dto';
 import { UploadImageDto } from './dto/upload-image.dto';
+import { getParentCategory } from '../../../utils/getNestedCategories';
 
 const productsIncluding = [
   {
@@ -43,10 +44,6 @@ const productsIncluding = [
       exclude: ['productId'],
     },
   },
-  {
-    model: SubCategory,
-    through: { attributes: [] },
-  },
 ];
 @Injectable()
 export class ProductService {
@@ -56,8 +53,8 @@ export class ProductService {
     private characteristicTypeRepository: typeof CharacteristicType,
     @InjectModel(CharacteristicProduct)
     private characteristicProductRepository: typeof CharacteristicProduct,
-    @InjectModel(SubCategory)
-    private subCategoryRepository: typeof SubCategory,
+    @InjectModel(Category)
+    private categoryRepository: typeof Category,
   ) {}
   async createProduct(dto: CreateProductDto): Promise<Product> {
     const candidate = await this.productRepository.findOne({
@@ -95,6 +92,20 @@ export class ProductService {
       });
     }
 
+    const categories = await this.categoryRepository.findAll({
+      where: {
+        name: {
+          [Op.in]: dto.categories,
+        },
+      },
+    });
+
+    if (categories.length != dto.categories.length) {
+      throw new BadRequestException({
+        message: 'Таких категорий не существует',
+      });
+    }
+
     const productVariantsCreated = variants
       .map((u) => u.characteristics)
       .flat();
@@ -116,7 +127,7 @@ export class ProductService {
     });
     await product.$set(
       'categories',
-      await this.tryGetOrCreateCategories(dto.categories),
+      categories.map((e) => e.id),
     );
 
     for (const productCharacteristicDto of dto.productVariants) {
@@ -132,7 +143,7 @@ export class ProductService {
       );
     }
 
-    return this.productRepository.findOne({
+    return await this.productRepository.findOne({
       where: {
         id: product.id,
       },
@@ -155,11 +166,33 @@ export class ProductService {
         dto.row,
         {
           where: {
-            ...excludeFields(dto, FilterProductDto, [
-              'row',
-              'countItems',
-              'category',
-            ]),
+            visible: true,
+            ...(dto.producer
+              ? {
+                  shortProducer: dto.producer,
+                }
+              : {}),
+            ...(dto.country
+              ? {
+                  countryProducer: dto.country,
+                }
+              : {}),
+            ...(dto.query
+              ? {
+                  [Op.or]: [
+                    {
+                      name: {
+                        [Op.iLike]: `%${dto.query}%`,
+                      },
+                    },
+                    {
+                      description: {
+                        [Op.iLike]: `%${dto.query}%`,
+                      },
+                    },
+                  ],
+                }
+              : {}),
           },
           include: [
             {
@@ -179,28 +212,27 @@ export class ProductService {
               },
             },
             {
-              model: SubCategory,
+              model: Category,
               through: { attributes: [] },
               where: dto.category
                 ? {
                     [Op.or]: {
-                      name: dto.category,
-                      categoryName: dto.category,
+                      symbolCode: dto.category,
                     },
                   }
                 : {},
             },
           ],
         },
-        dto.countItems,
+        dto.itemsCount,
       ),
     );
   }
 
   async filterItems() {
     const producer = await this.productRepository.findAll({
-      group: ['producer'],
-      attributes: ['producer'],
+      group: ['shortProducer'],
+      attributes: ['shortProducer'],
     });
 
     const country = await this.productRepository.findAll({
@@ -209,59 +241,90 @@ export class ProductService {
     });
 
     return {
-      producer: producer.map((e) => e.producer),
+      producer: producer.map((e) => e.shortProducer),
       country: country.map((e) => e.countryProducer),
     };
+  }
+
+  async getAllSymbolCodes() {
+    return this.productRepository.findAll({
+      attributes: ['symbolCode'],
+      group: ['symbolCode'],
+    });
   }
 
   async countAll(dto: FilterUnRowedProductDto) {
     const pages = await this.productRepository.count({
       where: {
-        ...excludeFields(dto, FilterProductDto, ['countItems', 'category']),
+        visible: true,
+        ...(dto.producer
+          ? {
+              shortProducer: dto.producer,
+            }
+          : {}),
+        ...(dto.country
+          ? {
+              countryProducer: dto.country,
+            }
+          : {}),
+        ...(dto.query
+          ? {
+              [Op.or]: [
+                {
+                  name: {
+                    [Op.iLike]: `%${dto.query}%`,
+                  },
+                },
+                {
+                  description: {
+                    [Op.iLike]: `%${dto.query}%`,
+                  },
+                },
+              ],
+            }
+          : {}),
       },
       include: [
         {
-          model: SubCategory,
+          model: Category,
           where: dto.category
             ? {
-                name: dto.category,
+                symbolCode: dto.category,
               }
             : {},
         },
       ],
     });
 
-    return { pages: calculateCountPage(pages, dto.countItems) };
+    return { pages: calculateCountPage(pages, dto.itemsCount) };
   }
 
-  async getBySymbolCode(symbolCode: string) {
-    return this.productRepository.findOne({
+  async getBySymbolCode(
+    symbolCode: string,
+  ): Promise<
+    CreationProductAttributes & { categories: CategoryCreationAttributes[] }
+  > {
+    const a = await this.productRepository.findOne({
       where: {
         symbolCode: symbolCode,
+        visible: true,
       },
-      include: productsIncluding,
-    });
-  }
-
-  async tryGetOrCreateCategories(subCategories: CreateSubCategoryDto[]) {
-    const ids: number[] = [];
-    for (const category of subCategories) {
-      const categoryDes = destroyFields(category, CreateSubCategoryDto);
-      let cat = await this.subCategoryRepository.findOne({
-        where: {
-          ...categoryDes,
+      include: [
+        ...productsIncluding,
+        {
+          model: Category,
         },
-      });
-
-      if (!cat) {
-        cat = await this.subCategoryRepository.create({
-          ...categoryDes,
-        });
-      }
-
-      ids.push(cat.id);
+      ],
+    });
+    const categories: CategoryCreationAttributes[] = [];
+    for (const i of a?.categories ?? []) {
+      categories.push(await getParentCategory(i.id, this.categoryRepository));
     }
-    return ids;
+
+    return {
+      ...JSON.parse(JSON.stringify(a)),
+      categories: categories,
+    };
   }
 
   async groupByCategories(
@@ -269,22 +332,47 @@ export class ProductService {
   ): Promise<Record<string, Product[]>> {
     const products: Record<string, Product[]> = {};
 
-    const categories = await this.subCategoryRepository.findAll(
-      rowed(0, {}, 10),
+    const categories = await this.categoryRepository.findAll<Category>(
+      rowed(
+        0,
+        {
+          where: {},
+          include: [],
+        },
+        10,
+      ),
     );
 
     for (const category of categories) {
-      products[`${category.name}::${category.categoryName}`] =
+      products[`${category.name}`] =
         await this.productRepository.findAll<Product>(
           rowed(
             0,
             {
               where: {
                 visible: true,
+                ...(dto.producer
+                  ? {
+                      shortProducer: dto.producer,
+                    }
+                  : {}),
+                ...(dto.country
+                  ? {
+                      countryProducer: dto.country,
+                    }
+                  : {}),
               },
-              include: productsIncluding,
+              include: [
+                ...productsIncluding,
+                {
+                  model: Category,
+                  where: {
+                    name: category.name,
+                  },
+                },
+              ],
             },
-            dto.pageCount,
+            dto.itemsCount,
           ),
         );
     }
