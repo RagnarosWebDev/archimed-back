@@ -56,6 +56,7 @@ export class ProductService {
     @InjectModel(Category)
     private categoryRepository: typeof Category,
   ) {}
+
   async createProduct(dto: CreateProductDto): Promise<Product> {
     const candidate = await this.productRepository.findOne({
       where: {

@@ -24,4 +24,22 @@ export class CreateOrderDto {
     type: [OrderItem],
   })
   items: OrderItem[];
+
+  @ApiProperty({
+    example: '123',
+    description: 'Кому',
+  })
+  why: string;
+
+  @ApiProperty({
+    example: '123',
+    description: 'Email',
+  })
+  email: string;
+
+  @ApiProperty({
+    example: '123',
+    description: 'Телефон',
+  })
+  phone: string;
 }

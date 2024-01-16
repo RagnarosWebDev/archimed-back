@@ -11,6 +11,8 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Characteristic } from '../characteristics/characteristic.model';
 import { CharacteristicsToProduct } from './characteristics-to-product';
 import { Product } from '../product.model';
+import { OrderProduct } from '../order/order.product.model';
+import { Order } from '../order/order.model';
 
 export class CharacteristicProductCreationAttributes {
   @ApiProperty({
@@ -125,4 +127,7 @@ export class CharacteristicProduct extends Model<CharacteristicProductCreationAt
 
   @BelongsToMany(() => Characteristic, () => CharacteristicsToProduct)
   characteristics: Characteristic[];
+
+  @BelongsToMany(() => Order, () => OrderProduct)
+  orders: Order[];
 }

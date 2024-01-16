@@ -32,7 +32,11 @@ export class RolesGuard implements CanActivate {
       [context.getHandler(), context.getClass()],
     );
     const authHeader = req.headers.authorization;
+
     if (!authHeader) {
+      if (isNotRequired) {
+        return true;
+      }
       throw new ForbiddenException('Токена нет в заголовке');
     }
     const [bearer, token] = authHeader.split(' ');

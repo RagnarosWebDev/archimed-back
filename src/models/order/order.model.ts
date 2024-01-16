@@ -42,6 +42,12 @@ export class OrderCreationAttributes {
     description: 'Id user',
   })
   userId?: number;
+
+  @ApiProperty({
+    example: 123,
+    description: 'Сумма',
+  })
+  sum: number;
 }
 @Table({ tableName: 'order', createdAt: true, updatedAt: false })
 export class Order extends Model<Order> {
@@ -61,6 +67,12 @@ export class Order extends Model<Order> {
     allowNull: false,
   })
   phone: string;
+
+  @Column({
+    type: DataType.DOUBLE,
+    allowNull: false,
+  })
+  sum: number;
 
   @Column
   @ForeignKey(() => User)

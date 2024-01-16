@@ -1,7 +1,7 @@
 import { Column, DataType, HasMany, Model, Table } from 'sequelize-typescript';
 import { ApiProperty } from '@nestjs/swagger';
 import { Role } from './role.model';
-import { Order } from 'sequelize';
+import { Order } from '../order/order.model';
 
 @Table({ tableName: 'users', createdAt: false, updatedAt: false })
 export class User extends Model<User> {
@@ -101,6 +101,6 @@ export class User extends Model<User> {
   })
   role: Role;
 
-  @HasMany(() => User, 'userId')
+  @HasMany(() => Order, 'userId')
   orders: Order[];
 }
