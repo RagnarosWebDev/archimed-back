@@ -34,6 +34,7 @@ import { UploadImageDto } from './dto/upload-image.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { fileOption } from '../../../utils/files';
 import { FilterItemsDto } from './dto/filter-items.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 @ApiTags('product')
 @ApiBearerAuth()
@@ -103,6 +104,16 @@ export class ProductController {
   @Get('/getAllSymbolCodes')
   async getAllSymbolCodes(): Promise<Product[]> {
     return this.productService.getAllSymbolCodes();
+  }
+
+  @ApiOperation({ summary: 'обновить продукт' })
+  @ApiResponse({ status: 200, type: Product })
+  @Post('/update')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiBody({ type: UpdateProductDto })
+  async updateProduct(@TypedBody(UpdateProductDto) dto: UpdateProductDto) {
+    return this.productService.updateProduct(dto);
   }
 
   @ApiOperation({ summary: 'обновить картинку продукта' })

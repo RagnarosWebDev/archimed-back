@@ -31,6 +31,12 @@ export class FilterProductDto extends RowDto {
     description: 'Производитель',
   })
   producer?: string;
+
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Visible',
+  })
+  visible?: string;
 }
 
 export class FilterUnRowedProductDto extends OmitType(FilterProductDto, [

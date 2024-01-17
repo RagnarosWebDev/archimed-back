@@ -26,6 +26,7 @@ import {
 import { RecommendedDto } from './dto/recommended.dto';
 import { UploadImageDto } from './dto/upload-image.dto';
 import { getParentCategory } from '../../../utils/getNestedCategories';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 const productsIncluding = [
   {
@@ -167,7 +168,11 @@ export class ProductService {
         dto.row,
         {
           where: {
-            visible: true,
+            ...(dto.visible
+              ? {
+                  visible: dto.visible,
+                }
+              : {}),
             ...(dto.producer
               ? {
                   shortProducer: dto.producer,
@@ -257,7 +262,11 @@ export class ProductService {
   async countAll(dto: FilterUnRowedProductDto) {
     const pages = await this.productRepository.count({
       where: {
-        visible: true,
+        ...(dto.visible
+          ? {
+              visible: dto.visible,
+            }
+          : {}),
         ...(dto.producer
           ? {
               shortProducer: dto.producer,
@@ -403,6 +412,32 @@ export class ProductService {
       where: {
         id: dto.characteristicProductId,
       },
+    });
+  }
+
+  async updateProduct(dto: UpdateProductDto) {
+    const [count] = await this.productRepository.update(
+      {
+        visible: dto.visible,
+      },
+      {
+        where: {
+          id: dto.id,
+        },
+      },
+    );
+
+    if (count == 0) {
+      throw new BadRequestException({
+        message: 'Такого продукта не существует',
+      });
+    }
+
+    return await this.productRepository.findOne({
+      where: {
+        id: dto.id,
+      },
+      include: productsIncluding,
     });
   }
 }
