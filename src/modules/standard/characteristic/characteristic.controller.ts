@@ -29,7 +29,7 @@ export class CharacteristicController {
   @ApiResponse({ status: 200, type: CharacteristicType })
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  @Post('/')
+  @Post('/create')
   create(@Body() dto: CreateCharacteristicsDto): Promise<CharacteristicType> {
     return this.characteristicService.create(dto);
   }
