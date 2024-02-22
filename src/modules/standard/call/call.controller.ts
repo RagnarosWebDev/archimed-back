@@ -14,6 +14,7 @@ import { RolesGuard } from '../../../utils/roles.guard';
 import { Roles } from '../../../utils/roles-auth.decorator';
 import { Role } from '../../../models/user/role.model';
 import { TypedBody } from '../../../utils/auth-data.decorator';
+import { CountDto } from '../../../utils/count-dto';
 
 @Controller('call')
 @ApiTags('обратная связь')
@@ -38,13 +39,22 @@ export class CallController {
     return this.callService.all(row);
   }
 
+  @ApiOperation({ summary: 'Посмотреть записи' })
+  @ApiResponse({ status: 200, type: CountDto })
+  @Get('/count')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  count(): Promise<CountDto> {
+    return this.callService.count();
+  }
+
   @ApiOperation({ summary: 'Изменить статус' })
   @ApiResponse({ status: 200, type: Call })
   @Put('/changeStatus')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   @ApiBody({ type: EditStatusDto })
-  changeStatus(@TypedBody(CreateCallDto) dto: EditStatusDto) {
+  changeStatus(@TypedBody(EditStatusDto) dto: EditStatusDto) {
     return this.callService.changeStatus(dto);
   }
 }

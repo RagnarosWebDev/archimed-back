@@ -26,7 +26,10 @@ import {
 import { RecommendedDto } from './dto/recommended.dto';
 import { UploadImageDto } from './dto/upload-image.dto';
 import { getParentCategory } from '../../../utils/getNestedCategories';
-import { UpdateProductDto } from './dto/update-product.dto';
+import {
+  UpdateProductCharacteristicDto,
+  UpdateProductDto,
+} from './dto/update-product.dto';
 
 const productsIncluding = [
   {
@@ -254,8 +257,8 @@ export class ProductService {
 
   async getAllSymbolCodes() {
     return this.productRepository.findAll({
-      attributes: ['symbolCode'],
-      group: ['symbolCode'],
+      attributes: ['symbolCode', 'id'],
+      group: ['symbolCode', 'id'],
     });
   }
 
@@ -317,7 +320,6 @@ export class ProductService {
     const a = await this.productRepository.findOne({
       where: {
         symbolCode: symbolCode,
-        visible: true,
       },
       include: [
         ...productsIncluding,
@@ -415,10 +417,11 @@ export class ProductService {
     });
   }
 
-  async updateProduct(dto: UpdateProductDto) {
-    const [count] = await this.productRepository.update(
+  async updateProductCharacteristics(dto: UpdateProductCharacteristicDto) {
+    const [count] = await this.characteristicProductRepository.update(
       {
-        visible: dto.visible,
+        ...dto,
+        image: dto.image.filename,
       },
       {
         where: {
@@ -431,6 +434,43 @@ export class ProductService {
       throw new BadRequestException({
         message: 'Такого продукта не существует',
       });
+    }
+
+    return await this.productRepository.findOne({
+      where: {
+        id: dto.id,
+      },
+      include: productsIncluding,
+    });
+  }
+
+  async updateProduct(dto: UpdateProductDto) {
+    const [count] = await this.productRepository.update(
+      {
+        ...dto,
+      },
+      {
+        where: {
+          id: dto.id,
+        },
+      },
+    );
+
+    if (dto.categories != undefined) {
+      const pr = await this.productRepository.findOne({
+        where: {
+          id: dto.id,
+        },
+        include: productsIncluding,
+      });
+
+      await pr.$set('categories', dto.categories);
+
+      if (count == 0) {
+        throw new BadRequestException({
+          message: 'Такого продукта не существует',
+        });
+      }
     }
 
     return await this.productRepository.findOne({

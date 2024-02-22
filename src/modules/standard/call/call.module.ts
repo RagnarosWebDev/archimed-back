@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CallService } from './call.service';
 import { SequelizeModule } from '@nestjs/sequelize';
-import { CallController } from './call.controler';
+import { CallController } from './call.controller';
 import { Call } from '../../../models/call.model';
 
 @Module({

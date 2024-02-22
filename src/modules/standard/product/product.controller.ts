@@ -30,11 +30,15 @@ import { RecommendedDto } from './dto/recommended.dto';
 import { RolesGuard } from '../../../utils/roles.guard';
 import { Roles } from '../../../utils/roles-auth.decorator';
 import { Role } from '../../../models/user/role.model';
-import { UploadImageDto } from './dto/upload-image.dto';
+import { UploadImage, UploadImageDto } from './dto/upload-image.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { fileOption } from '../../../utils/files';
 import { FilterItemsDto } from './dto/filter-items.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import {
+  UpdateProductCharacteristicDto,
+  UpdateProductDto,
+} from './dto/update-product.dto';
+import { CharacteristicProduct } from '../../../models/charactertistics-product/characteristic-product.model';
 
 @ApiTags('product')
 @ApiBearerAuth()
@@ -112,8 +116,30 @@ export class ProductController {
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
   @ApiBody({ type: UpdateProductDto })
-  async updateProduct(@TypedBody(UpdateProductDto) dto: UpdateProductDto) {
+  async updateProduct(
+    @TypedBody(UpdateProductDto)
+    dto: UpdateProductDto,
+  ) {
     return this.productService.updateProduct(dto);
+  }
+
+  @ApiOperation({ summary: 'обновить характеристику продукта' })
+  @ApiResponse({ status: 200, type: CharacteristicProduct })
+  @Post('/updateCharacteristic')
+  @UseGuards(RolesGuard)
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileInterceptor('image', {
+      ...fileOption,
+    }),
+  )
+  @Roles(Role.ADMIN)
+  @ApiBody({ type: UpdateProductCharacteristicDto })
+  async updateCharacteristic(
+    @TypedBody(UpdateProductCharacteristicDto)
+    dto: UpdateProductCharacteristicDto,
+  ) {
+    return this.productService.updateProductCharacteristics(dto);
   }
 
   @ApiOperation({ summary: 'обновить картинку продукта' })
@@ -130,5 +156,28 @@ export class ProductController {
   )
   async updateImage(@TypedBody(UploadImageDto) dto: UploadImageDto) {
     return this.productService.updateImage(dto);
+  }
+
+  @ApiOperation({ summary: 'Загрузить картинку' })
+  @ApiResponse({ status: 200, type: Product })
+  @Post('/uploadImageEditor')
+  @UseGuards(RolesGuard)
+  @ApiConsumes('multipart/form-data')
+  @Roles(Role.ADMIN)
+  @ApiBody({ type: UploadImage })
+  @UseInterceptors(
+    FileInterceptor('wangeditor-uploaded-image', {
+      ...fileOption,
+    }),
+  )
+  async upload(@TypedBody(UploadImage) dto: UploadImage) {
+    return {
+      errno: 0,
+      data: {
+        url: `https://api.arch.frontservice.ru/${dto['wangeditor-uploaded-image'].filename}`,
+        alt: 'Картинка',
+        href: `https://api.arch.frontservice.ru/${dto['wangeditor-uploaded-image'].filename}`,
+      },
+    };
   }
 }

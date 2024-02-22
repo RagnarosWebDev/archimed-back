@@ -1,9 +1,16 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Category } from '../../../models/category/category.model';
+import {
+  Category,
+  CategoryCreationAttributes,
+} from '../../../models/category/category.model';
 import { CreateCategoryDto } from './dto/create-category.dto';
-import { getNestedCategories } from '../../../utils/getNestedCategories';
+import {
+  getNestedCategories,
+  getParentCategory,
+} from '../../../utils/getNestedCategories';
 import { Op } from 'sequelize';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @Injectable()
 export class CategoryService {
@@ -14,9 +21,57 @@ export class CategoryService {
 
   async getAllSymbolCodes() {
     return this.categoryRepository.findAll({
-      attributes: ['symbolCode'],
-      group: ['symbolCode'],
+      attributes: ['symbolCode', 'id'],
+      group: ['symbolCode', 'id'],
     });
+  }
+
+  async lasts(): Promise<CategoryCreationAttributes[]> {
+    const categories = await this.categoryRepository.findAll({
+      include: [
+        {
+          model: Category,
+          as: 'subCategories',
+        },
+      ],
+    });
+
+    const promises = categories
+      .filter((e) => e.subCategories.length == 0)
+      .map((e) => getParentCategory(e.id, this.categoryRepository));
+
+    await Promise.all(promises);
+
+    const data: CategoryCreationAttributes[] = [];
+    for (const promise of promises) {
+      data.push(await promise);
+    }
+
+    return data;
+  }
+
+  async all() {
+    const categories = await this.categoryRepository.findAll({
+      include: [
+        {
+          model: Category,
+          as: 'subCategories',
+        },
+      ],
+    });
+
+    const promises = categories.map((e) =>
+      getParentCategory(e.id, this.categoryRepository),
+    );
+
+    await Promise.all(promises);
+
+    const data: CategoryCreationAttributes[] = [];
+    for (const promise of promises) {
+      data.push(await promise);
+    }
+
+    return data;
   }
 
   async getByIds(names: string[], isFather = false) {
@@ -53,21 +108,31 @@ export class CategoryService {
       ...dto,
     });
 
-    return this.categoryRepository.findOne({
-      where: {
-        id: category.id,
+    return getParentCategory(category.id, this.categoryRepository);
+  }
+
+  async update(dto: UpdateCategoryDto) {
+    await this.categoryRepository.update(
+      {
+        ...dto,
       },
-      include: {
-        all: true,
+      {
+        where: {
+          id: dto.id,
+        },
       },
-    });
+    );
+
+    return getParentCategory(dto.id, this.categoryRepository);
   }
 
   async getBySymbolCode(code: string) {
-    return this.categoryRepository.findOne({
+    const cat = await this.categoryRepository.findOne({
       where: {
         symbolCode: code,
       },
     });
+
+    return getParentCategory(cat.id, this.categoryRepository);
   }
 }

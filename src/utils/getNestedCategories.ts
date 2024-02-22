@@ -67,7 +67,10 @@ export const getParentCategory = async (
     ),
   );
 
-  if (category.parentCategoryId != undefined) {
+  if (
+    category.parentCategoryId != undefined &&
+    category.parentCategoryId != null
+  ) {
     category.parentCategory = await getParentCategory(
       category.parentCategoryId,
       categoryRepository,

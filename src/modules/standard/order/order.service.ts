@@ -7,6 +7,9 @@ import { CharacteristicProduct } from '../../../models/charactertistics-product/
 import { Op } from 'sequelize';
 import { Product } from '../../../models/product.model';
 import { calculatePrice } from '../../../utils/calculate-price';
+import { RowDto } from '../../../utils/row.dto';
+import { calculateCountPage, rowed } from '../../../utils/shared.extension';
+import { Characteristic } from '../../../models/characteristics/characteristic.model';
 
 @Injectable()
 export class OrderService {
@@ -74,5 +77,28 @@ export class OrderService {
       },
       include: [CharacteristicProduct],
     });
+  }
+
+  async list(row: RowDto) {
+    return this.orderRepository.findAll(
+      rowed(
+        row.row,
+        {
+          include: [
+            {
+              model: CharacteristicProduct,
+              include: [Product, Characteristic],
+            },
+          ],
+        },
+        20,
+      ),
+    );
+  }
+
+  async countAll() {
+    const count = await this.orderRepository.count();
+
+    return { pages: calculateCountPage(count, 20) };
   }
 }

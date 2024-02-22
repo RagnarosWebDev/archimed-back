@@ -13,3 +13,11 @@ export class UploadImageDto {
   })
   image: Express.Multer.File;
 }
+
+export class UploadImage {
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+  })
+  'wangeditor-uploaded-image': Express.Multer.File;
+}
